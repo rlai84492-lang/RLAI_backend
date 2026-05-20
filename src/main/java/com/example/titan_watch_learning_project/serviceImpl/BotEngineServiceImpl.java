@@ -93,17 +93,21 @@ public class BotEngineServiceImpl implements BotEngineService {
     // =============================================
     @Override
     public void sendWelcomeMessage(String phone, String customerName, BotSession session) {
+
+        String imageUrl = "https://www.titanwatch.in/images/birthday-banner.jpg";
+        // ↑ Apni real image URL daalo — Cloudinary ya S3 se
+
         String text = "Dear " + customerName + ", your birthday is just 10 days away! 🎂\n\n"
-                + "At Titan, we would love to celebrate your special occasion with timeless "
-                + "watches crafted for every moment.\n\n"
-                + "Choose what you would like to explore today:";
+                + "At Titan, we would love to celebrate your special occasion "
+                + "with timeless watches crafted for every moment.";
 
         List<Map<String, String>> buttons = List.of(
-                Map.of("title", "Find My Watch", "payload", "FIND_WATCH"),
-                Map.of("title", "Birthday Offers", "payload", "BIRTHDAY_OFFERS")
+                Map.of("title", "🎁 Find My Birthday Watch", "payload", "FIND_WATCH"),
+                Map.of("title", "🎉 Exclusive Birthday Offers", "payload", "BIRTHDAY_OFFERS")
         );
 
-        String mid = karixService.sendButtonMessage(phone, text, buttons);
+        String mid = karixService.sendImageButtonMessage(phone, imageUrl, text, buttons);
+
         saveMessage(phone, session.getCustomerId(), mid,
                 Message.Direction.OUTBOUND, Message.MessageType.BUTTON,
                 text, null, "WELCOME");
@@ -111,6 +115,7 @@ public class BotEngineServiceImpl implements BotEngineService {
         session.setCurrentStep("WELCOME");
         sessionRepo.save(session);
     }
+
 
     private void handleWelcomeStep(String phone, String payload,
                                    BotSession session, String customerName) {
@@ -131,22 +136,73 @@ public class BotEngineServiceImpl implements BotEngineService {
     // =============================================
     // STEP 2 — COLLECTION SELECTION
     // =============================================
-    private void sendCollectionSelection(String phone, BotSession session) {
-        String text = "Celebrate your special day with a watch that matches your personality! 🎉\n\n"
-                + "Choose a collection:";
+//    private void sendCollectionSelection(String phone, BotSession session) {
+//
+//        // Testing ke liye abhi yeh use karo
+//        String imageUrl = "https://picsum.photos/800/400";
+//
+//        String text = "Celebrate your special day with a watch that matches your personality! 🎉\n\n"
+//                + "Choose a collection:";
+//
+//        List<Map<String, String>> buttons = List.of(
+//                Map.of("title", "Men's Collection",   "payload", "MENS"),
+//                Map.of("title", "Women's Collection", "payload", "WOMENS")
+//        );
+//
+//        // Yeh line change karo — sendButtonMessage → sendImageButtonMessage
+//        String mid = karixService.sendImageButtonMessage(phone, imageUrl, text, buttons);
+//
+//        saveMessage(phone, session.getCustomerId(), mid,
+//                Message.Direction.OUTBOUND, Message.MessageType.BUTTON,
+//                text, null, "COLLECTION");
+//
+//        session.setCurrentStep("COLLECTION");
+//        sessionRepo.save(session);
+//    }
 
+
+
+    private void sendCollectionSelection(String phone, BotSession session) {
+
+        // 1. Premium Minimalist Watch Banner (Replace with Titan live CDN link later)
+//        String imageUrl = "https://picsum.photos/800/400";
+        String imageUrl = "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw6279dccd/images/Titan/Catalog/1688KM06_4.jpg?sw=600&sh=600"; // Men's Watch Vibe
+        // 2. Premium Text Layout with Unicode styling for Elegant Brand View
+        String text = "✨ *Titan Regalia Premium Blue* ✨\n\n"
+                + "Celebrate your special day with a timepiece crafted to match your distinct personality.\n\n"
+                + "➔ _Please select a curated collection below:_";
+
+        // 3. Buttons with Unicode Arrows for Intuitive Action
         List<Map<String, String>> buttons = List.of(
-                Map.of("title", "Men's Collection",   "payload", "MENS"),
-                Map.of("title", "Women's Collection", "payload", "WOMENS")
+                Map.of("title", "💼 Men's Premium ➔", "payload", "MENS"),
+                Map.of("title", "👑 Women's Luxury ➔", "payload", "WOMENS")
         );
 
-        String mid = karixService.sendButtonMessage(phone, text, buttons);
-        saveMessage(phone, session.getCustomerId(), mid,
-                Message.Direction.OUTBOUND, Message.MessageType.BUTTON,
-                text, null, "COLLECTION");
+        try {
+            log.info("Sending premium collection menu to phone: {}", phone);
 
-        session.setCurrentStep("COLLECTION");
-        sessionRepo.save(session);
+            // 4. Triggering the Outbound Media Message via Karix
+            String mid = karixService.sendImageButtonMessage(phone, imageUrl, text, buttons);
+
+            if (mid == null || mid.isBlank()) {
+                log.error("Failed to fetch Message ID (mid) from Karix Service for phone: {}", phone);
+                return;
+            }
+
+            // 5. Audit Logging / DB State Persistence
+            saveMessage(phone, session.getCustomerId(), mid,
+                    Message.Direction.OUTBOUND, Message.MessageType.BUTTON,
+                    text, null, "COLLECTION");
+
+            // 6. Update State Machine
+            session.setCurrentStep("COLLECTION");
+            sessionRepo.save(session);
+
+            log.info("Bot session successfully updated to COLLECTION step for phone: {}", phone);
+
+        } catch (Exception e) {
+            log.error("Exception occurred while sending Collection Selection to {}: {}", phone, e.getMessage(), e);
+        }
     }
 
     private void handleCollectionStep(String phone, String payload, BotSession session) {
@@ -215,38 +271,47 @@ public class BotEngineServiceImpl implements BotEngineService {
             return;
         }
 
-        List<Map<String, Object>> products = top6.stream().map(w -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("id",    w.getId().toString());
-            m.put("name",  w.getName());
-            m.put("price", w.getPrice());
-            return m;
+        // Carousel cards banao
+        List<Map<String, Object>> cards = top6.stream().map(w -> {
+            Map<String, Object> card = new HashMap<>();
+            card.put("imageUrl",     w.getImageUrl()); // Watch ki image URL
+            card.put("title",        w.getName());
+            card.put("description",  "₹" + w.getPrice());
+            card.put("buttonTitle",  "Pick this! ⌚");
+            card.put("watchId",      w.getId().toString());
+            return card;
         }).collect(Collectors.toList());
 
         String header = session.getSelectedCollection().name()
                 + " — " + session.getSelectedStyle().name().replace("_", " ");
 
-        String mid = karixService.sendCarouselMessage(phone, header, products);
+        String mid = karixService.sendCarouselCards(
+                phone,
+                "Perfect! 👏 Which watch feels crafted just for you?\n\n" + header,
+                cards
+        );
+
         saveMessage(phone, session.getCustomerId(), mid,
                 Message.Direction.OUTBOUND, Message.MessageType.CAROUSEL,
                 header, null, "CAROUSEL");
 
-        // Action buttons after the carousel
-        String actionText = "What would you like to do? 👇";
+        // Action buttons after carousel
         List<Map<String, String>> actionButtons = List.of(
-                Map.of("title", "Get a Callback",     "payload", "CALLBACK"),
-                Map.of("title", "Filter by Price",    "payload", "PRICE_FILTER"),
-                Map.of("title", "Download Catalogue", "payload", "CATALOGUE")
+                Map.of("title", "📞 Get a Callback",   "payload", "CALLBACK"),
+                Map.of("title", "💰 Filter by Price",  "payload", "PRICE_FILTER"),
+                Map.of("title", "📖 Full Catalogue",   "payload", "CATALOGUE")
         );
-        String mid2 = karixService.sendButtonMessage(phone, actionText, actionButtons);
+
+        String mid2 = karixService.sendButtonMessage(
+                phone, "What would you like to do? 👇", actionButtons);
+
         saveMessage(phone, session.getCustomerId(), mid2,
                 Message.Direction.OUTBOUND, Message.MessageType.BUTTON,
-                actionText, null, "CAROUSEL_ACTION");
+                "Carousel actions", null, "CAROUSEL_ACTION");
 
         session.setCurrentStep("CAROUSEL");
         sessionRepo.save(session);
     }
-
     private void handleCarouselStep(String phone, String payload, BotSession session) {
         String p = extractPayload(payload);
         switch (p) {
@@ -563,6 +628,11 @@ public class BotEngineServiceImpl implements BotEngineService {
         }
         return payload.toUpperCase().trim();
     }
+
+
+
+
+
 
 
 

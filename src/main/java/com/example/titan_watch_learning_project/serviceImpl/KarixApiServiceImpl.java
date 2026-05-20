@@ -178,4 +178,92 @@ public class KarixApiServiceImpl implements KarixApiService {
             log.error("========== KARIX ERROR END ==========");
             throw new RuntimeException("Failed to send message via Karix: " + e.getMessage());
         }
-    }}
+    }
+
+
+    // =============================================
+// 4. Image Header + Button Message
+// =============================================
+    @Override
+    public String sendImageButtonMessage(String toPhone, String imageUrl,
+                                         String bodyText, List<Map<String, String>> buttons) {
+        Map<String, Object> body = buildBaseMessage(toPhone);
+
+        List<Map<String, Object>> btnList = new ArrayList<>();
+        int limit = Math.min(buttons.size(), 3);
+        for (int i = 0; i < limit; i++) {
+            Map<String, Object> btn = new HashMap<>();
+            btn.put("type", "reply");
+            btn.put("reply", Map.of(
+                    "id",    "BTN_" + i + "_" + buttons.get(i).get("payload"),
+                    "title", buttons.get(i).get("title")
+            ));
+            btnList.add(btn);
+        }
+
+        Map<String, Object> interactive = new HashMap<>();
+        interactive.put("type", "button");
+        interactive.put("header", Map.of(
+                "type", "image",
+                "image", Map.of("link", imageUrl)
+        ));
+        interactive.put("body",   Map.of("text", bodyText));
+        interactive.put("action", Map.of("buttons", btnList));
+
+        Map<String, Object> content = new HashMap<>();
+        content.put("type", "INTERACTIVE");
+        content.put("interactive", interactive);
+        getMessageMap(body).put("content", content);
+
+        return sendToKarix(body);
+    }
+
+    // =============================================
+// 5. Carousel Cards (Tanishq style)
+// =============================================
+    @Override
+    public String sendCarouselCards(String toPhone, String bodyText, List<Map<String, Object>> cards) {
+        Map<String, Object> body = buildBaseMessage(toPhone);
+
+        List<Map<String, Object>> cardList = new ArrayList<>();
+        for (Map<String, Object> card : cards) {
+            Map<String, Object> cardObj = new HashMap<>();
+
+            cardObj.put("header", Map.of(
+                    "type",  "image",
+                    "image", Map.of("link", card.get("imageUrl"))
+            ));
+            cardObj.put("body", Map.of(
+                    "text", card.get("title") + "\n" + card.get("description")
+            ));
+            cardObj.put("action", Map.of(
+                    "buttons", List.of(Map.of(
+                            "type",  "reply",
+                            "reply", Map.of(
+                                    "id",    "CARD_" + card.get("watchId"),
+                                    "title", card.get("buttonTitle")
+                            )
+                    ))
+            ));
+
+            cardList.add(cardObj);
+        }
+
+        Map<String, Object> interactive = new HashMap<>();
+        interactive.put("type",   "carousel");
+        interactive.put("body",   Map.of("text", bodyText));
+        interactive.put("action", Map.of("cards", cardList));
+
+        Map<String, Object> content = new HashMap<>();
+        content.put("type",        "INTERACTIVE");
+        content.put("interactive", interactive);
+        getMessageMap(body).put("content", content);
+
+        return sendToKarix(body);
+    }
+
+
+
+
+
+}

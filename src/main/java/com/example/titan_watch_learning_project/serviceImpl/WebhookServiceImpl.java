@@ -36,6 +36,7 @@ public class WebhookServiceImpl implements WebhookService {
             String eventType = root.path("type").asText();
             log.info("Event type: {}", eventType);
 
+
             // Local Postman testing payload
             if (root.has("buttonPayload") || root.has("text")) {
                 String phone = extractPhone(root);
