@@ -6,14 +6,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Message {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "customer_id")
@@ -22,7 +18,7 @@ public class Message {
     @Column(nullable = false)
     private String phone;
 
-    private String mid; // Karix message ID
+    private String mid;
 
     @Enumerated(EnumType.STRING)
     private Direction direction;
@@ -54,7 +50,7 @@ public class Message {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    public enum Direction { OUTBOUND, INBOUND }
+    public enum Direction  { OUTBOUND, INBOUND }
     public enum MessageType { TEXT, BUTTON, CAROUSEL, IMAGE, TEMPLATE }
     public enum Status { SENT, DELIVERED, READ, FAILED, RECEIVED }
 }

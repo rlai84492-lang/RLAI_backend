@@ -6,14 +6,10 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "watches")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Watch {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -37,6 +33,8 @@ public class Watch {
     private String productUrl;
 
     private String sku;
+
+    private String description;
 
     @Column(name = "is_active")
     @Builder.Default

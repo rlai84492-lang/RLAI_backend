@@ -6,14 +6,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Customer {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -32,6 +28,9 @@ public class Customer {
 
     @Column(name = "store_code")
     private String storeCode;
+
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "is_active")
     @Builder.Default

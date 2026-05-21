@@ -1,15 +1,14 @@
 package com.example.titan_watch_learning_project.serviceImpl;//package com.example.titan.serviceImpl;
 //
 //import com.example.titan.service.KarixApiService;
-//import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.titan_watch_learning_project.service.KarixApiService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
@@ -27,243 +26,170 @@ public class KarixApiServiceImpl implements KarixApiService {
     @Value("${karix.waba.number}")
     private String wabaNumber;
 
-    @Value("${karix.webhook.dnid}")
-    private String webhookDnId;
+//    @Value("${karix.webhook.dnid}")
+//    private String webhookDnId;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    // =============================================
-    // 1. Send Simple Text Message
-    // =============================================
+    // ══════════════════════════════════════════════════════
+    // 1. Plain text message
+    // ══════════════════════════════════════════════════════
     @Override
     public String sendTextMessage(String toPhone, String text) {
-        Map<String, Object> body = buildBaseMessage(toPhone);
-        Map<String, Object> content = new HashMap<>();
+        Map<String, Object> body = buildBase(toPhone);
+        Map<String, Object> content = new LinkedHashMap<>();
         content.put("type", "TEXT");
         content.put("preview_url", false);
         content.put("text", text);
-        getMessageMap(body).put("content", content);
-        return sendToKarix(body);
+        msg(body).put("content", content);
+        return post(body);
     }
 
-    // =============================================
-    // 2. Send Button Message (Quick Reply — max 3 buttons on WhatsApp)
-    // =============================================
+    // ══════════════════════════════════════════════════════
+    // 2. Quick-reply button message (max 3 buttons, no image)
+    // ══════════════════════════════════════════════════════
     @Override
     public String sendButtonMessage(String toPhone, String bodyText, List<Map<String, String>> buttons) {
-        Map<String, Object> body = buildBaseMessage(toPhone);
-
-        List<Map<String, Object>> btnList = new ArrayList<>();
-        for (int i = 0; i < Math.min(buttons.size(), 3); i++) {
-            Map<String, Object> btn = new HashMap<>();
-            btn.put("type", "reply");
-            Map<String, String> reply = new HashMap<>();
-            reply.put("id", "BTN_" + i + "_" + buttons.get(i).get("payload"));
-            reply.put("title", buttons.get(i).get("title"));
-            btn.put("reply", reply);
-            btnList.add(btn);
-        }
-
-        Map<String, Object> interactive = new HashMap<>();
-        interactive.put("type", "button");
-        interactive.put("body", Map.of("text", bodyText));
-        interactive.put("action", Map.of("buttons", btnList));
-
-        Map<String, Object> content = new HashMap<>();
-        content.put("type", "INTERACTIVE");
-        content.put("interactive", interactive);
-        getMessageMap(body).put("content", content);
-        return sendToKarix(body);
+        Map<String, Object> body = buildBase(toPhone);
+        msg(body).put("content", buildInteractiveButton(null, bodyText, buttons));
+        return post(body);
     }
 
-    // =============================================
-    // 3. Send List / Carousel Message
-    // =============================================
+    // ══════════════════════════════════════════════════════
+    // 3. Image + button message (Tanishq style)
+    // ══════════════════════════════════════════════════════
     @Override
-    public String sendCarouselMessage(String toPhone, String headerText, List<Map<String, Object>> products) {
-        Map<String, Object> body = buildBaseMessage(toPhone);
+    public String sendImageButtonMessage(String toPhone, String imageUrl, String bodyText, List<Map<String, String>> buttons) {
+        Map<String, Object> body = buildBase(toPhone);
+        msg(body).put("content", buildInteractiveButton(imageUrl, bodyText, buttons));
+        return post(body);
+    }
+
+    // ══════════════════════════════════════════════════════
+    // 4. Carousel / list message — for style selection, product carousel
+    // ══════════════════════════════════════════════════════
+    @Override
+    public String sendCarouselCards(String toPhone, String bodyText, List<Map<String, Object>> cards) {
+        Map<String, Object> body = buildBase(toPhone);
 
         List<Map<String, Object>> rows = new ArrayList<>();
-        for (Map<String, Object> p : products) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("id", p.get("id").toString());
-            row.put("title", p.get("name").toString());
-            Object price = p.get("price");
-            row.put("description", price != null && !price.toString().isEmpty()
-                    ? "₹" + price : "");
+        for (Map<String, Object> card : cards) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id",          String.valueOf(card.get("id")));
+            row.put("title",       String.valueOf(card.get("name")));
+            String price = card.get("price") != null && !card.get("price").toString().isEmpty()
+                    ? "₹" + card.get("price") : "";
+            row.put("description", price);
             rows.add(row);
         }
 
-        Map<String, Object> section = new HashMap<>();
-        section.put("title", "Available Watches");
-        section.put("rows", rows);
+        Map<String, Object> section = new LinkedHashMap<>();
+        section.put("title", "Select an option");
+        section.put("rows",  rows);
 
-        Map<String, Object> action = new HashMap<>();
-        action.put("button", "Select Watch");
+        Map<String, Object> action = new LinkedHashMap<>();
+        action.put("button",   "View options");
         action.put("sections", List.of(section));
 
-        Map<String, Object> interactive = new HashMap<>();
-        interactive.put("type", "list");
-        interactive.put("header", Map.of("type", "text", "text", headerText));
-        interactive.put("body", Map.of("text", "Choose a watch that matches your style"));
+        Map<String, Object> interactive = new LinkedHashMap<>();
+        interactive.put("type",   "list");
+        interactive.put("body",   Map.of("text", bodyText));
         interactive.put("action", action);
 
-        Map<String, Object> content = new HashMap<>();
-        content.put("type", "INTERACTIVE");
+        Map<String, Object> content = new LinkedHashMap<>();
+        content.put("type",        "INTERACTIVE");
         content.put("interactive", interactive);
-        getMessageMap(body).put("content", content);
-        return sendToKarix(body);
+        msg(body).put("content", content);
+        return post(body);
     }
 
-    // =============================================
-    // Base Message Builder
-    // =============================================
-    private Map<String, Object> buildBaseMessage(String toPhone) {
-        Map<String, Object> root = new HashMap<>();
-        Map<String, Object> message = new HashMap<>();
-        message.put("channel", "WABA");
-        message.put("recipient", Map.of(
-                "to", toPhone,
-                "recipient_type", "individual",
-                "reference", Map.of("cust_ref", "titan_" + System.currentTimeMillis())
-        ));
-        message.put("sender", Map.of("from", wabaNumber));
-        message.put("preferences", Map.of("webHookDNId", webhookDnId));
-        root.put("message", message);
-        root.put("metaData", Map.of("version", "v1.0.9"));
-        return root;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getMessageMap(Map<String, Object> root) {
-        return (Map<String, Object>) root.get("message");
-    }
-
-    // =============================================
-    // HTTP Call to Karix
-    // =============================================
-    private String sendToKarix(Map<String, Object> body) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // Postman jaisa exact header
-            headers.set("Authentication", "Bearer " + apiKey);
-
-            String jsonBody = objectMapper.writeValueAsString(body);
-
-            log.info("========== KARIX REQUEST START ==========");
-            log.info("Karix URL: {}", apiUrl);
-            log.info("Karix Header Authentication: Bearer {}", apiKey);
-            log.info("Karix Request Body: {}", jsonBody);
-            log.info("========== KARIX REQUEST END ==========");
-
-            HttpEntity<String> request = new HttpEntity<>(jsonBody, headers);
-
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity(apiUrl, request, String.class);
-
-            log.info("========== KARIX RESPONSE START ==========");
-            log.info("Karix Response Status: {}", response.getStatusCode());
-            log.info("Karix Response Body: {}", response.getBody());
-            log.info("========== KARIX RESPONSE END ==========");
-
-            return response.getBody();
-
-        } catch (Exception e) {
-            log.error("========== KARIX ERROR START ==========");
-            log.error("Karix API error message: {}", e.getMessage());
-            log.error("Karix API full error: ", e);
-            log.error("========== KARIX ERROR END ==========");
-            throw new RuntimeException("Failed to send message via Karix: " + e.getMessage());
-        }
-    }
-
-
-    // =============================================
-// 4. Image Header + Button Message
-// =============================================
+    // ══════════════════════════════════════════════════════
+    // 5. List message (same as carousel but generic)
+    // ══════════════════════════════════════════════════════
     @Override
-    public String sendImageButtonMessage(String toPhone, String imageUrl,
-                                         String bodyText, List<Map<String, String>> buttons) {
-        Map<String, Object> body = buildBaseMessage(toPhone);
+    public String sendListMessage(String toPhone, String bodyText, List<Map<String, Object>> options) {
+        return sendCarouselCards(toPhone, bodyText, options);
+    }
 
+    // ══════════════════════════════════════════════════════
+    // PRIVATE — interactive button builder
+    // ══════════════════════════════════════════════════════
+    private Map<String, Object> buildInteractiveButton(String imageUrl, String bodyText, List<Map<String, String>> buttons) {
         List<Map<String, Object>> btnList = new ArrayList<>();
         int limit = Math.min(buttons.size(), 3);
         for (int i = 0; i < limit; i++) {
-            Map<String, Object> btn = new HashMap<>();
+            Map<String, Object> btn = new LinkedHashMap<>();
             btn.put("type", "reply");
             btn.put("reply", Map.of(
-                    "id",    "BTN_" + i + "_" + buttons.get(i).get("payload"),
+                    "id",    buttons.get(i).get("payload"),   // simple payload — no BTN_0_ prefix
                     "title", buttons.get(i).get("title")
             ));
             btnList.add(btn);
         }
 
-        Map<String, Object> interactive = new HashMap<>();
+        Map<String, Object> interactive = new LinkedHashMap<>();
         interactive.put("type", "button");
-        interactive.put("header", Map.of(
-                "type", "image",
-                "image", Map.of("link", imageUrl)
-        ));
+
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            interactive.put("header", Map.of(
+                    "type",  "image",
+                    "image", Map.of("link", imageUrl)
+            ));
+        }
+
         interactive.put("body",   Map.of("text", bodyText));
         interactive.put("action", Map.of("buttons", btnList));
 
-        Map<String, Object> content = new HashMap<>();
-        content.put("type", "INTERACTIVE");
-        content.put("interactive", interactive);
-        getMessageMap(body).put("content", content);
-
-        return sendToKarix(body);
-    }
-
-    // =============================================
-// 5. Carousel Cards (Tanishq style)
-// =============================================
-    @Override
-    public String sendCarouselCards(String toPhone, String bodyText, List<Map<String, Object>> cards) {
-        Map<String, Object> body = buildBaseMessage(toPhone);
-
-        List<Map<String, Object>> cardList = new ArrayList<>();
-        for (Map<String, Object> card : cards) {
-            Map<String, Object> cardObj = new HashMap<>();
-
-            cardObj.put("header", Map.of(
-                    "type",  "image",
-                    "image", Map.of("link", card.get("imageUrl"))
-            ));
-            cardObj.put("body", Map.of(
-                    "text", card.get("title") + "\n" + card.get("description")
-            ));
-            cardObj.put("action", Map.of(
-                    "buttons", List.of(Map.of(
-                            "type",  "reply",
-                            "reply", Map.of(
-                                    "id",    "CARD_" + card.get("watchId"),
-                                    "title", card.get("buttonTitle")
-                            )
-                    ))
-            ));
-
-            cardList.add(cardObj);
-        }
-
-        Map<String, Object> interactive = new HashMap<>();
-        interactive.put("type",   "carousel");
-        interactive.put("body",   Map.of("text", bodyText));
-        interactive.put("action", Map.of("cards", cardList));
-
-        Map<String, Object> content = new HashMap<>();
+        Map<String, Object> content = new LinkedHashMap<>();
         content.put("type",        "INTERACTIVE");
         content.put("interactive", interactive);
-        getMessageMap(body).put("content", content);
-
-        return sendToKarix(body);
+        return content;
     }
 
+    // ══════════════════════════════════════════════════════
+    // PRIVATE — base message wrapper
+    // ══════════════════════════════════════════════════════
+    private Map<String, Object> buildBase(String toPhone) {
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("channel", "WABA");
+        message.put("recipient", Map.of(
+                "to",             toPhone,
+                "recipient_type", "individual",
+                "reference",      Map.of("cust_ref", "titan_" + System.currentTimeMillis())
+        ));
+        message.put("sender",      Map.of("from", wabaNumber));
+//        message.put("preferences", Map.of("webHookDNId", webhookDnId));
+        root.put("message",  message);
+        root.put("metaData", Map.of("version", "v1.0.9"));
+        return root;
+    }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> msg(Map<String, Object> root) {
+        return (Map<String, Object>) root.get("message");
+    }
 
+    // ══════════════════════════════════════════════════════
+    // PRIVATE — HTTP POST
+    // ══════════════════════════════════════════════════════
+    private String post(Map<String, Object> body) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + apiKey);
 
+            String json = objectMapper.writeValueAsString(body);
+            log.info("Karix → sending: {}", json.substring(0, Math.min(json.length(), 300)));
 
+            ResponseEntity<String> res = restTemplate.postForEntity(
+                    apiUrl, new HttpEntity<>(json, headers), String.class);
+            log.info("Karix ← response: {}", res.getBody());
+            return res.getBody();
+        } catch (Exception e) {
+            log.error("Karix API error: {}", e.getMessage(), e);
+            return null;
+        }
+    }
 }

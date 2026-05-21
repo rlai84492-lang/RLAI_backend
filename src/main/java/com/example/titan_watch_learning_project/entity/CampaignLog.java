@@ -7,14 +7,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "campaign_logs")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class CampaignLog {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "campaign_id")
@@ -27,7 +23,7 @@ public class CampaignLog {
     private String phone;
 
     @Column(name = "campaign_type")
-    private String campaignType; // "T10" or "TDAY"
+    private String campaignType;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

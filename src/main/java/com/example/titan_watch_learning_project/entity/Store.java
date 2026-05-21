@@ -5,14 +5,10 @@ import lombok.*;
 
 @Entity
 @Table(name = "stores")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Store {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "store_code", unique = true)
@@ -24,8 +20,8 @@ public class Store {
     @Column(nullable = false)
     private String address;
 
+    private String city;
     private String timings;
-
     private String phone;
 
     @Column(name = "maps_link")
