@@ -255,22 +255,25 @@ public class KarixApiServiceImpl {
         sender.put("from", wabaNumber);
 
         Map<String, Object> content = new LinkedHashMap<>();
-        content.put("type", "TEXT");
+        content.put("preview_url", false);
         content.put("text", text);
+        content.put("type", "TEXT");
 
         Map<String, Object> message = new LinkedHashMap<>();
         message.put("channel", "WABA");
+        message.put("content", content);
         message.put("recipient", recipient);
         message.put("sender", sender);
-        message.put("content", content);
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("message", message);
+        Map<String, Object> metaData = new LinkedHashMap<>();
+        metaData.put("version", "v1.0.9");
 
-        return body;
-    }
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("message", message);
+        requestBody.put("metaData", metaData);
 
-    public void sendImageButtonMessage(String toPhone) {
+        return requestBody;
+    }    public void sendImageButtonMessage(String toPhone) {
         Map<String, Object> reference = new LinkedHashMap<>();
         reference.put("cust_ref", "titan_" + System.currentTimeMillis());
 
@@ -342,10 +345,7 @@ public class KarixApiServiceImpl {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // Same header name as your working Postman request
-            headers.set(authHeaderName, karixApiKey);
-
+            headers.set("Authentication", "Bearer " + karixApiKey);
             String json = objectMapper.writeValueAsString(body);
 
             log.info("Karix → sending to={} step={} url={} body={}",
@@ -363,5 +363,81 @@ public class KarixApiServiceImpl {
             log.error("Karix API error while sending to={} step={} url={}",
                     toPhone, stepName, karixApiUrl, e);
         }
+    }
+
+    private Map<String, Object> buildBirthdayOptionsPayload(String toPhone, String text) {
+
+        Map<String, Object> reference = new LinkedHashMap<>();
+        reference.put("cust_ref", "titan_" + System.currentTimeMillis());
+
+        Map<String, Object> recipient = new LinkedHashMap<>();
+        recipient.put("to", toPhone);
+        recipient.put("recipient_type", "individual");
+        recipient.put("reference", reference);
+
+        Map<String, Object> sender = new LinkedHashMap<>();
+        sender.put("from", wabaNumber);
+
+        Map<String, Object> bodyText = new LinkedHashMap<>();
+        bodyText.put("text", text);
+
+        Map<String, Object> button1Reply = new LinkedHashMap<>();
+        button1Reply.put("id", "FIND_BIRTHDAY_WATCH");
+        button1Reply.put("title", "Find Birthday Watch");
+
+        Map<String, Object> button1 = new LinkedHashMap<>();
+        button1.put("type", "reply");
+        button1.put("reply", button1Reply);
+
+        Map<String, Object> button2Reply = new LinkedHashMap<>();
+        button2Reply.put("id", "BIRTHDAY_OFFERS");
+        button2Reply.put("title", "Birthday Offers");
+
+        Map<String, Object> button2 = new LinkedHashMap<>();
+        button2.put("type", "reply");
+        button2.put("reply", button2Reply);
+
+        Map<String, Object> action = new LinkedHashMap<>();
+        action.put("buttons", List.of(button1, button2));
+
+        Map<String, Object> interactive = new LinkedHashMap<>();
+        interactive.put("type", "button");
+        interactive.put("body", bodyText);
+        interactive.put("action", action);
+
+        Map<String, Object> content = new LinkedHashMap<>();
+        content.put("type", "INTERACTIVE");
+        content.put("interactive", interactive);
+
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("channel", "WABA");
+        message.put("content", content);
+        message.put("recipient", recipient);
+        message.put("sender", sender);
+
+        Map<String, Object> metaData = new LinkedHashMap<>();
+        metaData.put("version", "v1.0.9");
+
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("message", message);
+        requestBody.put("metaData", metaData);
+
+        return requestBody;
+    }
+
+    public void sendBirthdayOptionsMessage(String toPhone, String customerName) {
+
+        String text = "Dear " + customerName + ",\n"
+                + "Your birthday is just 10 days away! 🎂\n\n"
+                + "At Titan, we would love to celebrate your special occasion with timeless watches crafted for every moment.\n\n"
+                + "Choose what you would like to explore today:";
+
+        Map<String, Object> body = buildBirthdayOptionsPayload(toPhone, text);
+
+
+
+
+
+        post(body, toPhone, "BIRTHDAY_OPTIONS");
     }
 }

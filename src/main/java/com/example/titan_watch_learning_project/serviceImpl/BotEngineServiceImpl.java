@@ -20,6 +20,7 @@ public class BotEngineServiceImpl implements BotEngineService {
     private final BotSessionRepository botSessionRepository;
     private final KarixApiServiceImpl karixApiService;
 
+    @Override
     public void processIncomingMessage(
             String phone,
             String text,
@@ -33,17 +34,34 @@ public class BotEngineServiceImpl implements BotEngineService {
 
         BotSession session = getOrCreateSession(phone, customerId);
 
-        log.info("Step for {}: {}", phone, session.getCurrentStep());
+        if ("FIND_BIRTHDAY_WATCH".equalsIgnoreCase(payload)) {
+            karixApiService.sendTextMessage(
+                    phone,
+                    "Great choice! Let’s help you find the perfect birthday watch. Please choose a collection: Men’s or Women’s."
+            );
 
-        if (session.getCurrentStep() == null || session.getCurrentStep().isBlank()) {
-            session.setCurrentStep("WELCOME");
+            session.setCurrentStep("COLLECTION");
             session.setLastActivity(LocalDateTime.now());
             botSessionRepository.save(session);
+            return;
         }
 
-        handleWelcome(phone, session);
-    }
+        if ("BIRTHDAY_OFFERS".equalsIgnoreCase(payload)) {
+            karixApiService.sendTextMessage(
+                    phone,
+                    "A special birthday deserves special rewards! 🎉 Our Titan team will help you explore your exclusive birthday offers."
+            );
 
+            session.setCurrentStep("BIRTHDAY_OFFERS");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+        log.info("Step for {}: {}", phone, session.getCurrentStep());
+
+        handleWelcome(phone, customerName, session);
+    }
     @Override
     public void sendWelcomeMessage(String phone, String customerName, BotSession session) {
 
@@ -54,14 +72,36 @@ public class BotEngineServiceImpl implements BotEngineService {
 
     }
 
-    private void handleWelcome(String phone, BotSession session) {
-        // First test with simple text. Once working, replace with sendImageButtonMessage.
-        karixApiService.sendTextMessage(phone, "Welcome to Titan! Thank you for contacting us.");
+//    private void handleWelcome(String phone, BotSession session) {
+//        // First test with simple text. Once working, replace with sendImageButtonMessage.
+//        karixApiService.sendTextMessage(phone, "Welcome to Titan! ⌚ This is a test notification sent from Samarth to verify message delivery, formatting, and device connectivity. Everything is working smoothly and the integration looks great.");
+//
+//        // Later, after text is confirmed working:
+//        // karixApiService.sendImageButtonMessage(phone);
+//
+//        session.setCurrentStep("WELCOME_SENT");
+//        session.setLastActivity(LocalDateTime.now());
+//        botSessionRepository.save(session);
+//    }
 
-        // Later, after text is confirmed working:
-        // karixApiService.sendImageButtonMessage(phone);
 
-        session.setCurrentStep("WELCOME_SENT");
+    private void handleWelcome(String phone, String customerName, BotSession session) {
+
+        // 1st message: current working test message
+        karixApiService.sendTextMessage(
+                phone,
+                "Welcome to Titan! ⌚ This is a test notification sent from Samarth to verify message delivery, formatting, and device connectivity. Everything is working smoothly and the integration looks great."
+        );
+
+        // Dynamic name
+        String name = customerName != null && !customerName.isBlank()
+                ? customerName
+                : "Customer";
+
+        // 2nd message: Birthday option buttons
+        karixApiService.sendBirthdayOptionsMessage(phone, name);
+
+        session.setCurrentStep("BIRTHDAY_OPTIONS");
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
@@ -74,7 +114,11 @@ public class BotEngineServiceImpl implements BotEngineService {
 
         message.setMessageContent(text);
         message.setButtonPayload(payload);
-        message.setMessageType(Message.MessageType.TEXT); // ya BUTTON
+        if (payload != null && !payload.isBlank() && !payload.equalsIgnoreCase(text)) {
+            message.setMessageType(Message.MessageType.BUTTON);
+        } else {
+            message.setMessageType(Message.MessageType.TEXT);
+        }
         message.setStatus(Message.Status.RECEIVED);
         message.setStepName("INCOMING");
         message.setSentAt(LocalDateTime.now());
