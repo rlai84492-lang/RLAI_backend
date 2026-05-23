@@ -20,10 +20,11 @@ public class WatchProduct {
 
     private String brand;
 
-    @Column(length = 1000)
+    @Column(name = "product_url", length = 1000)
     private String productUrl;
 
-    @Column(length = 1000)
+
+    @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
     private Boolean active = true;

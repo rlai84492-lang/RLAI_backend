@@ -1,6 +1,7 @@
 
 package com.example.titan_watch_learning_project.serviceImpl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,16 +82,21 @@ public class KarixApiServiceImpl {
         return requestBody;
     }
 
-    private void post(Map<String, Object> body, String toPhone, String stepName) {
+    private boolean post(Map<String, Object> body, String toPhone, String stepName) {
         try {
             if (karixApiKey == null || karixApiKey.isBlank()) {
                 log.error("Karix API key is blank. Please set KARIX_API_KEY env variable.");
-                return;
+                return false;
             }
+
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            headers.set(authHeaderName, karixApiKey);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authentication", "Bearer " + karixApiKey);
+
             String json = objectMapper.writeValueAsString(body);
 
             log.info("Karix → sending to={} step={} url={} body={}",
@@ -101,15 +107,26 @@ public class KarixApiServiceImpl {
             ResponseEntity<String> response =
                     restTemplate.postForEntity(karixApiUrl, request, String.class);
 
+            String responseBody = response.getBody();
+
             log.info("Karix API response status={} body={}",
-                    response.getStatusCode(), response.getBody());
+                    response.getStatusCode(), responseBody);
+
+            if (responseBody == null || responseBody.isBlank()) {
+                return false;
+            }
+
+            JsonNode root = objectMapper.readTree(responseBody);
+            String statusCode = root.path("statusCode").asText("");
+
+            return "200".equals(statusCode);
 
         } catch (Exception e) {
             log.error("Karix API error while sending to={} step={} url={}",
                     toPhone, stepName, karixApiUrl, e);
+            return false;
         }
     }
-
     private Map<String, Object> buildBirthdayOptionsPayload(String toPhone, String text) {
 
         Map<String, Object> reference = new LinkedHashMap<>();
@@ -191,7 +208,7 @@ public class KarixApiServiceImpl {
         post(body, toPhone, "BUTTON_MESSAGE");
     }
 
-    public void sendImageButtonMessage(
+    public boolean sendImageButtonMessage(
             String toPhone,
             String imageUrl,
             String bodyMessage,
@@ -254,7 +271,12 @@ public class KarixApiServiceImpl {
         Map<String, Object> requestBody = new LinkedHashMap<>();
         requestBody.put("message", message);
 
-        post(requestBody, toPhone, "IMAGE_BUTTON_MESSAGE");
+        // ✅ YEH ADD KARO - YAHI MISSING THA!
+        Map<String, Object> metaData = new LinkedHashMap<>();
+        metaData.put("version", "v1.0.9");
+        requestBody.put("metaData", metaData);
+
+        return post(requestBody, toPhone, "IMAGE_BUTTON_MESSAGE");
     }
 
 
@@ -477,7 +499,7 @@ public class KarixApiServiceImpl {
 
 
 
-    public void sendImageMessage(String toPhone, String imageUrl, String caption) {
+    public boolean sendImageMessage(String toPhone, String imageUrl, String caption) {
         Map<String, Object> reference = new LinkedHashMap<>();
         reference.put("cust_ref", "titan_" + System.currentTimeMillis());
 
@@ -510,6 +532,6 @@ public class KarixApiServiceImpl {
         Map<String, Object> requestBody = new LinkedHashMap<>();
         requestBody.put("message", message);
 
-        post(requestBody, toPhone, "PRODUCT_IMAGE");
+        return post(requestBody, toPhone, "PRODUCT_IMAGE");
     }
 }

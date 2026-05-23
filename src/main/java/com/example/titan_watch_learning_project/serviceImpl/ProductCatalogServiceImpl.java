@@ -26,6 +26,8 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
                 );
     }
 
+
+
     @Override
     public List<WatchProduct> getProductsByCollection(String collectionType) {
         return watchProductRepository

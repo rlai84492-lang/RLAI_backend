@@ -296,13 +296,12 @@ private  final ProductCatalogService productCatalogService;
                     phone,
                     "Sorry, we could not find watches in this price range right now."
             );
-
             karixApiService.sendButtonMessage(
                     phone,
                     "Would you like to continue?",
                     List.of(
-                            Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
-                            Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
+                            Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
+                            Map.of("title", "Browse again", "payload", "BROWSE_AGAIN")
                     )
             );
             return;
@@ -311,32 +310,54 @@ private  final ProductCatalogService productCatalogService;
         int index = 1;
 
         for (WatchProduct product : products) {
-            String brand = product.getBrand() == null || product.getBrand().isBlank()
+            String brand = (product.getBrand() == null || product.getBrand().isBlank())
                     ? "Titan Watch"
                     : product.getBrand();
 
-            String productUrl = product.getProductUrl() == null
+            String productUrl = (product.getProductUrl() == null)
                     ? ""
                     : product.getProductUrl();
 
             String imageUrl = product.getImageUrl();
 
-            String caption =
-                    index + ". " + brand + "\n\n"
-                            + "Explore this Titan watch here:\n"
-                            + productUrl;
+            System.out.println(imageUrl + "here samarth image");
 
+            // ✅ CLEAN caption - no number prefix, premium feel
+            String caption =
+                    "✨ *TITAN | " + brand.toUpperCase() + "*\n\n"
+                            + "Celebrate your special day with a timepiece crafted for you.\n\n"
+                            + "🔗 " + productUrl;
+
+            log.info("Sending product id={} brand={} imageUrl={}",
+                    product.getId(), brand, imageUrl);
+
+            // ✅ IMAGE CHECK - log karke dekho kya aa raha hai
             if (imageUrl != null && !imageUrl.isBlank()) {
-                karixApiService.sendImageMessage(
+                log.info("Attempting image card for product id={} url={}",
+                        product.getId(), imageUrl);
+
+                boolean sent = karixApiService.sendImageButtonMessage(
                         phone,
                         imageUrl,
-                        caption
+                        caption,
+                        List.of(
+                                Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
+                                Map.of("title", "Catalogue", "payload", "DOWNLOAD_CATALOGUE")
+                        )
                 );
+
+                if (sent) {
+                    log.info("✅ Image card sent for product id={}", product.getId());
+                } else {
+                    // ✅ Fallback - text + link
+                    log.warn("❌ Image card failed for product id={}. Sending text fallback.",
+                            product.getId());
+                    karixApiService.sendTextMessage(phone, caption);
+                }
             } else {
-                karixApiService.sendTextMessage(
-                        phone,
-                        caption
-                );
+                // ✅ No image URL - direct text
+                log.warn("No imageUrl for product id={}. Sending text.", product.getId());
+                karixApiService.sendTextMessage(phone, caption);
             }
 
             index++;
@@ -346,18 +367,22 @@ private  final ProductCatalogService productCatalogService;
                 phone,
                 "Liked a watch? What would you like to do next?",
                 List.of(
-                        Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
+                        Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
                         Map.of("title", "Catalogue", "payload", "DOWNLOAD_CATALOGUE"),
-                        Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
+                        Map.of("title", "Browse again", "payload", "BROWSE_AGAIN")
                 )
         );
     }
+
+
     private String getCollectionFromSession(BotSession session) {
         String step = session.getCurrentStep();
 
         if (step == null) {
             return "MALE";
         }
+
+
 
         if (step.contains("FEMALE") || step.contains("WOMEN")) {
             return "FEMALE";
@@ -395,7 +420,6 @@ private  final ProductCatalogService productCatalogService;
         if (collectionType == null || collectionType.isBlank()) {
             collectionType = "MALE";
         }
-
         List<WatchProduct> products =
                 productCatalogService.getProductsByCollectionAndPrice(collectionType, priceBucket);
 
@@ -543,8 +567,8 @@ private  final ProductCatalogService productCatalogService;
                         + "We've put together a Titan edit - chosen for your style, for this occasion.\n"
                         + "Take a look whenever it feels right.",
                 List.of(
-                        Map.of("title", "Find birthday watch", "payload", "FIND_BIRTHDAY_WATCH"),
-                        Map.of("title", "Birthday offers", "payload", "BIRTHDAY_OFFERS")
+                        Map.of("title", "Find watch", "payload", "FIND_BIRTHDAY_WATCH"),
+                        Map.of("title", "Offers", "payload", "BIRTHDAY_OFFERS")
                 )
         );
 
@@ -552,7 +576,6 @@ private  final ProductCatalogService productCatalogService;
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
-
     private void saveIncomingMessage(String phone, String text, String payload, Long customerId) {
         Message message = new Message();
         message.setPhone(phone);
