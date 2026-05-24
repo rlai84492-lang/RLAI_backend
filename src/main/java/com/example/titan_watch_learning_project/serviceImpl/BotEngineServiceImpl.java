@@ -171,15 +171,16 @@ private  final ProductCatalogService productCatalogService;
         if ("REQUEST_CALLBACK".equalsIgnoreCase(cleanPayload)) {
             karixApiService.sendTextMessage(
                     phone,
-                    "Thank you! Our Titan team will call you shortly to help you find your perfect birthday watch. 📞"
+                    "📞 *We'll be in touch shortly!*\n\n"
+                            + "Our Titan concierge team has received your request.\n\n"
+                            + "A dedicated style advisor will call you within the next *15–20 minutes* to help you find your perfect birthday timepiece.\n\n"
+                            + "_Thank you for choosing Titan._ 🙏"
             );
-
             session.setCurrentStep("CALLBACK_REQUESTED");
             session.setLastActivity(LocalDateTime.now());
             botSessionRepository.save(session);
             return;
         }
-
         // Book store visit
         if ("BOOK_STORE_VISIT".equalsIgnoreCase(cleanPayload)) {
             karixApiService.sendTextMessage(
@@ -195,17 +196,20 @@ private  final ProductCatalogService productCatalogService;
 
         // Download catalogue
         if ("DOWNLOAD_CATALOGUE".equalsIgnoreCase(cleanPayload)) {
-            karixApiService.sendTextMessage(
+            karixApiService.sendImageButtonMessage(
                     phone,
-                    "Here is your birthday catalogue: https://www.titanwatch.in/birthday-catalogue"
+                    "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Library-Sites-TitanSharedLibrary/default/dwd83ec67e/images/homepage/All_Banners/WYS_D.jpg",
+                    "🎂 *Titan Birthday Collection 2026*\n\nExplore our exclusive birthday watch catalogue.\n\n🔗 Visit: www.titan.co.in",
+                    List.of(
+                            Map.of("title", "Explore Now", "payload", "BROWSE_COLLECTION"),
+                            Map.of("title", "Callback", "payload", "REQUEST_CALLBACK")
+                    )
             );
-
             session.setCurrentStep("CATALOGUE_SENT");
             session.setLastActivity(LocalDateTime.now());
             botSessionRepository.save(session);
             return;
         }
-
         // Website
         if ("EXPLORE_WEBSITE".equalsIgnoreCase(cleanPayload)
                 || "BROWSE_COLLECTION".equalsIgnoreCase(cleanPayload)) {
@@ -324,8 +328,10 @@ private  final ProductCatalogService productCatalogService;
 
             // ✅ CLEAN caption - no number prefix, premium feel
             String caption =
-                    "✨ *TITAN | " + brand.toUpperCase() + "*\n\n"
-                            + "Celebrate your special day with a timepiece crafted for you.\n\n"
+                    "⌚ *" + brand.toUpperCase() + "*\n"
+                            + "━━━━━━━━━━━━━━\n"
+                            + "🎂 _Birthday Special Pick_\n\n"
+                            + "Crafted for those who wear time with pride.\n\n"
                             + "🔗 " + productUrl;
 
             log.info("Sending product id={} brand={} imageUrl={}",
@@ -365,11 +371,13 @@ private  final ProductCatalogService productCatalogService;
 
         karixApiService.sendButtonMessage(
                 phone,
-                "Liked a watch? What would you like to do next?",
+                "✨ *Your curated edit is ready.*\n\n"
+                        + "Each timepiece above has been selected with your celebration in mind.\n\n"
+                        + "What would you like to do next?",
                 List.of(
-                        Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
-                        Map.of("title", "Catalogue", "payload", "DOWNLOAD_CATALOGUE"),
-                        Map.of("title", "Browse again", "payload", "BROWSE_AGAIN")
+                        Map.of("title", "📞 Callback", "payload", "REQUEST_CALLBACK"),
+                        Map.of("title", "📖 Catalogue", "payload", "DOWNLOAD_CATALOGUE"),
+                        Map.of("title", "🔄 Browse Again", "payload", "BROWSE_AGAIN")
                 )
         );
     }
@@ -453,7 +461,8 @@ private  final ProductCatalogService productCatalogService;
     private void sendPriceSelection(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
-                "Choose your preferred budget range:",
+                "💎 *Every budget deserves a masterpiece.*\n\n"
+                        + "Select your preferred range and we'll curate the finest Titan timepieces for you:",
                 List.of(
                         Map.of("title", "₹2k - ₹5k", "payload", "PRICE_2K_5K"),
                         Map.of("title", "₹5k - ₹10k", "payload", "PRICE_5K_10K"),
@@ -462,7 +471,6 @@ private  final ProductCatalogService productCatalogService;
                 )
         );
     }
-
     private void handleStyleSelected(
             String phone,
             BotSession session,
@@ -470,19 +478,17 @@ private  final ProductCatalogService productCatalogService;
             String styleName
     ) {
         String collectionType = getCollectionFromSession(session);
-
-        if (collectionType == null || collectionType.isBlank()) {
-            collectionType = "MALE";
-        }
+        if (collectionType == null || collectionType.isBlank()) collectionType = "MALE";
 
         karixApiService.sendButtonMessage(
                 phone,
-                "Great choice! " + styleName + " watches are perfect for your celebration.\n\n"
-                        + "Would you like to see recommendations by price?",
+                "🌟 *" + styleName + " — A perfect choice.*\n\n"
+                        + "Your taste speaks volumes.\n\n"
+                        + "Now let's find the watch that matches your budget — because luxury should feel right.",
                 List.of(
-                        Map.of("title", "See by Price", "payload", "SEE_BY_PRICE"),
-                        Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
-                        Map.of("title", "Catalogue", "payload", "DOWNLOAD_CATALOGUE")
+                        Map.of("title", "💰 See by Price", "payload", "SEE_BY_PRICE"),
+                        Map.of("title", "📞 Request Callback", "payload", "REQUEST_CALLBACK"),
+                        Map.of("title", "📖 Catalogue", "payload", "DOWNLOAD_CATALOGUE")
                 )
         );
 
@@ -490,37 +496,36 @@ private  final ProductCatalogService productCatalogService;
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
-
     private void sendCollectionSelection(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
-                "Celebrate your special day with a watch that matches your personality.\n\nChoose a collection:",
+                "💍 *Discover Your Signature Style*\n\n"
+                        + "Every great watch begins with knowing who it's for.\n\n"
+                        + "Which collection speaks to you?",
                 List.of(
-                        Map.of("title", "Men’s Collection", "payload", "MENS_COLLECTION"),
-                        Map.of("title", "Women’s Collection", "payload", "WOMENS_COLLECTION"),
+                        Map.of("title", "Men's Collection", "payload", "MENS_COLLECTION"),
+                        Map.of("title", "Women's Collection", "payload", "WOMENS_COLLECTION"),
                         Map.of("title", "Couples Watches", "payload", "COUPLES_WATCHES")
                 )
         );
     }
-
-
     private void sendBirthdayOffers(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
-                "A special birthday deserves special rewards! 🎉\n\n"
-                        + "Exclusive benefits include:\n"
-                        + "• Birthday discounts\n"
-                        + "• Early access to collections\n"
-                        + "• Special in-store experience\n\n"
-                        + "How would you like to continue?",
+                "🎁 *Exclusive Birthday Privileges — Just for You*\n\n"
+                        + "Because your birthday deserves more than just a wish.\n\n"
+                        + "🏷️ Special birthday discounts\n"
+                        + "👑 Early access to new collections\n"
+                        + "🥂 VIP in-store experience\n"
+                        + "🎀 Complimentary gift wrapping\n\n"
+                        + "_Valid this birthday month only._",
                 List.of(
-                        Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
-                        Map.of("title", "Book Store Visit", "payload", "BOOK_STORE_VISIT"),
-                        Map.of("title", "Explore Website", "payload", "EXPLORE_WEBSITE")
+                        Map.of("title", "📞 Request Callback", "payload", "REQUEST_CALLBACK"),
+                        Map.of("title", "🏪 Book Store Visit", "payload", "BOOK_STORE_VISIT"),
+                        Map.of("title", "🌐 Explore Website", "payload", "EXPLORE_WEBSITE")
                 )
         );
     }
-
     private void sendStyleDemoBySession(String phone, BotSession session, String style) {
         String currentStep = session.getCurrentStep() == null ? "" : session.getCurrentStep();
 
@@ -559,16 +564,16 @@ private  final ProductCatalogService productCatalogService;
                 ? "there"
                 : customerName;
 
-        karixApiService.sendButtonMessage(
+        karixApiService.sendImageButtonMessage(
                 phone,
-                "Hi " + name + " 🎂\n\n"
-                        + "This is your birthday month.\n"
-                        + "Gift yourself time.\n\n"
-                        + "We've put together a Titan edit - chosen for your style, for this occasion.\n"
-                        + "Take a look whenever it feels right.",
+                "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw6279dccd/images/Titan/Catalog/1688KM06_4.jpg?sw=600&sh=600",
+                "🎂 *Happy Birthday Month, " + name + "!*\n\n"
+                        + "At Titan, we believe every moment deserves to be remembered.\n\n"
+                        + "✨ Your birthday is the perfect occasion to gift yourself time — timeless, elegant, yours.\n\n"
+                        + "_A curated collection awaits you._",
                 List.of(
-                        Map.of("title", "Find watch", "payload", "FIND_BIRTHDAY_WATCH"),
-                        Map.of("title", "Offers", "payload", "BIRTHDAY_OFFERS")
+                        Map.of("title", "🎁 Find My Watch", "payload", "FIND_BIRTHDAY_WATCH"),
+                        Map.of("title", "🎉 Birthday Offers", "payload", "BIRTHDAY_OFFERS")
                 )
         );
 
@@ -576,6 +581,7 @@ private  final ProductCatalogService productCatalogService;
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
+
     private void saveIncomingMessage(String phone, String text, String payload, Long customerId) {
         Message message = new Message();
         message.setPhone(phone);

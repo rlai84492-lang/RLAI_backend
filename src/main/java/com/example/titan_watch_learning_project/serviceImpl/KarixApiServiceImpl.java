@@ -298,20 +298,20 @@ public class KarixApiServiceImpl {
     }
 
     public void sendStyleSelectionMessage(String toPhone, String collectionName) {
-        String text = "Tell us your preferred style for " + collectionName + ":";
+        String text =
+                "✨ *Style is a reflection of your soul.*\n\n"
+                        + "Tell us — which aesthetic defines you?\n\n"
+                        + "_Choose your vibe for " + collectionName + ":_";
 
-        // 4 options hain, WhatsApp quick reply button max 3 hota hai,
-        // isliye yahan list message use kar rahe hain.
         List<Map<String, String>> options = List.of(
-                Map.of("title", "Minimal & Chic", "payload", "STYLE_MINIMAL_CHIC"),
-                Map.of("title", "Bold & Edgy", "payload", "STYLE_BOLD_EDGY"),
-                Map.of("title", "Luxe & Classy", "payload", "STYLE_LUXE_CLASSY"),
-                Map.of("title", "Sporty & Adventurous", "payload", "STYLE_SPORTY_ADVENTUROUS")
+                Map.of("title", "🤍 Minimal & Chic", "payload", "STYLE_MINIMAL_CHIC"),
+                Map.of("title", "🖤 Bold & Edgy", "payload", "STYLE_BOLD_EDGY"),
+                Map.of("title", "💛 Luxe & Classy", "payload", "STYLE_LUXE_CLASSY"),
+                Map.of("title", "🏆 Sporty & Adventurous", "payload", "STYLE_SPORTY_ADVENTUROUS")
         );
 
         sendListMessage(toPhone, text, options);
     }
-
     public void sendDemoStyleProductMessage(String toPhone, String gender, String style) {
         String imageUrl = getDemoImageUrl(gender, style);
 
