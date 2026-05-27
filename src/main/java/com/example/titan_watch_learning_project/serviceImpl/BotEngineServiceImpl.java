@@ -426,23 +426,26 @@ private  final ProductCatalogService productCatalogService;
 
     private String mapPricePayloadToBucket(String pricePayload) {
         if ("PRICE_2K_5K".equalsIgnoreCase(pricePayload)) {
-            return "PRICE_2K_5K";
+            return "BELOW_10K";
         }
 
         if ("PRICE_5K_10K".equalsIgnoreCase(pricePayload)) {
-            return "PRICE_5K_10K";
+            return "BELOW_10K";
         }
 
         if ("PRICE_10K_25K".equalsIgnoreCase(pricePayload)) {
-            return "PRICE_10K_25K";
+            return "10K_25K";
         }
 
         if ("PRICE_25K_PLUS".equalsIgnoreCase(pricePayload)) {
-            return "PRICE_25K_PLUS";
+            return "25K_PLUS";
         }
 
-        return pricePayload;
+        return "BELOW_10K";
     }
+
+
+
     private void handlePriceSelected(String phone, BotSession session, String pricePayload) {
         String collectionType = getCollectionFromSession(session);
         String priceBucket = mapPricePayloadToBucket(pricePayload);
