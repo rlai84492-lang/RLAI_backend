@@ -29,5 +29,8 @@ public class WatchProduct {
     @Column(name = "style")
     private String style;
 
+    @Column(name = "price")
+    private Double price;
+
     private Boolean active = true;
 }
