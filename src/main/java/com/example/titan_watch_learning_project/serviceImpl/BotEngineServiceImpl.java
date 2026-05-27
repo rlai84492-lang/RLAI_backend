@@ -345,10 +345,21 @@ private  final ProductCatalogService productCatalogService;
             System.out.println(imageUrl + "here samarth image");
 
             // ✅ CLEAN caption - no number prefix, premium feel
+            String priceText = product.getPrice() == null
+                    ? ""
+                    : "💰 *Price:* ₹" + String.format("%.0f", product.getPrice()) + "\n";
+
+            String styleText = product.getStyle() == null || product.getStyle().isBlank()
+                    ? ""
+                    : "✨ *Style:* " + product.getStyle() + "\n";
+
             String caption =
                     "⌚ *" + brand.toUpperCase() + "*\n"
                             + "━━━━━━━━━━━━━━\n"
                             + "🎂 _Birthday Special Pick_\n\n"
+                            + priceText
+                            + styleText
+                            + "\n"
                             + "Crafted for those who wear time with pride.\n\n"
                             + "🔗 " + productUrl;
 
