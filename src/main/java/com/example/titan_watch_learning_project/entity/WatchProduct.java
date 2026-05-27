@@ -23,7 +23,6 @@ public class WatchProduct {
     @Column(name = "product_url", length = 1000)
     private String productUrl;
 
-
     @Column(name = "image_url", length = 1000)
     private String imageUrl;
 

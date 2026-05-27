@@ -402,24 +402,46 @@ private  final ProductCatalogService productCatalogService;
 
         return "MALE";
     }
+//    private String mapPricePayloadToBucket(String pricePayload) {
+//        if ("PRICE_2K_5K".equalsIgnoreCase(pricePayload)) {
+//            return "BELOW_10K";
+//        }
+//
+//        if ("PRICE_5K_10K".equalsIgnoreCase(pricePayload)) {
+//            return "BELOW_10K";
+//        }
+//
+//        if ("PRICE_10K_25K".equalsIgnoreCase(pricePayload)) {
+//            return "10K_25K";
+//        }
+//
+//        if ("PRICE_25K_PLUS".equalsIgnoreCase(pricePayload)) {
+//            return "25K_PLUS";
+//        }
+//
+//        return "BELOW_10K";
+//    }
+
+
+
     private String mapPricePayloadToBucket(String pricePayload) {
         if ("PRICE_2K_5K".equalsIgnoreCase(pricePayload)) {
-            return "BELOW_10K";
+            return "PRICE_2K_5K";
         }
 
         if ("PRICE_5K_10K".equalsIgnoreCase(pricePayload)) {
-            return "BELOW_10K";
+            return "PRICE_5K_10K";
         }
 
         if ("PRICE_10K_25K".equalsIgnoreCase(pricePayload)) {
-            return "10K_25K";
+            return "PRICE_10K_25K";
         }
 
         if ("PRICE_25K_PLUS".equalsIgnoreCase(pricePayload)) {
-            return "25K_PLUS";
+            return "PRICE_25K_PLUS";
         }
 
-        return "BELOW_10K";
+        return pricePayload;
     }
     private void handlePriceSelected(String phone, BotSession session, String pricePayload) {
         String collectionType = getCollectionFromSession(session);
