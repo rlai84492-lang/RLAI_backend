@@ -248,7 +248,25 @@ private  final ProductCatalogService productCatalogService;
         handleWelcome(phone, customerName, session);
     }
 
+    private String mapStylePayloadToDbStyle(String stylePayload) {
+        if ("STYLE_MINIMAL_CHIC".equalsIgnoreCase(stylePayload)) {
+            return "Minimal & Chic";
+        }
 
+        if ("STYLE_BOLD_EDGY".equalsIgnoreCase(stylePayload)) {
+            return "Bold & Edgy";
+        }
+
+        if ("STYLE_LUXE_CLASSY".equalsIgnoreCase(stylePayload)) {
+            return "Luxe & Classy";
+        }
+
+        if ("STYLE_SPORTY_ADVENTUROUS".equalsIgnoreCase(stylePayload)) {
+            return "Sporty & Adventurous";
+        }
+
+        return "";
+    }
 
     private String normalizePayload(String value) {
         if (value == null || value.isBlank()) {
@@ -446,20 +464,82 @@ private  final ProductCatalogService productCatalogService;
 
 
 
+//    private void handlePriceSelected(String phone, BotSession session, String pricePayload) {
+//        String collectionType = getCollectionFromSession(session);
+//        String priceBucket = mapPricePayloadToBucket(pricePayload);
+//
+//        if (collectionType == null || collectionType.isBlank()) {
+//            collectionType = "MALE";
+//        }
+//        List<WatchProduct> products =
+//                productCatalogService.getProductsByCollectionAndPrice(collectionType, priceBucket);
+//
+//        if (products == null || products.isEmpty()) {
+//            karixApiService.sendTextMessage(
+//                    phone,
+//                    "Sorry, we could not find watches in this price range right now. Our team can help you personally."
+//            );
+//
+//            karixApiService.sendButtonMessage(
+//                    phone,
+//                    "Would you like a callback?",
+//                    List.of(
+//                            Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
+//                            Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
+//                    )
+//            );
+//
+//            session.setCurrentStep("NO_PRODUCTS_FOUND");
+//            session.setLastActivity(LocalDateTime.now());
+//            botSessionRepository.save(session);
+//            return;
+//        }
+//
+//        sendProductRecommendations(phone, products, collectionType, priceBucket);
+//
+//        session.setCurrentStep("PRODUCTS_SENT_" + collectionType + "_" + priceBucket);
+//        session.setLastActivity(LocalDateTime.now());
+//        botSessionRepository.save(session);
+//    }
+
+
     private void handlePriceSelected(String phone, BotSession session, String pricePayload) {
         String collectionType = getCollectionFromSession(session);
         String priceBucket = mapPricePayloadToBucket(pricePayload);
+        String stylePayload = getStyleFromSession(session);
+        String dbStyle = mapStylePayloadToDbStyle(stylePayload);
 
         if (collectionType == null || collectionType.isBlank()) {
             collectionType = "MALE";
         }
-        List<WatchProduct> products =
-                productCatalogService.getProductsByCollectionAndPrice(collectionType, priceBucket);
+
+        log.info("Fetching products collectionType={} priceBucket={} stylePayload={} dbStyle={}",
+                collectionType, priceBucket, stylePayload, dbStyle);
+
+        List<WatchProduct> products;
+
+        if ("COUPLES".equalsIgnoreCase(collectionType)) {
+            products = productCatalogService.getProductsByCollectionAndPrice(
+                    collectionType,
+                    priceBucket
+            );
+        } else if (dbStyle != null && !dbStyle.isBlank()) {
+            products = productCatalogService.getProductsByCollectionPriceAndStyle(
+                    collectionType,
+                    priceBucket,
+                    dbStyle
+            );
+        } else {
+            products = productCatalogService.getProductsByCollectionAndPrice(
+                    collectionType,
+                    priceBucket
+            );
+        }
 
         if (products == null || products.isEmpty()) {
             karixApiService.sendTextMessage(
                     phone,
-                    "Sorry, we could not find watches in this price range right now. Our team can help you personally."
+                    "Sorry, we could not find watches in this style and price range right now. Our team can help you personally."
             );
 
             karixApiService.sendButtonMessage(
@@ -479,12 +559,32 @@ private  final ProductCatalogService productCatalogService;
 
         sendProductRecommendations(phone, products, collectionType, priceBucket);
 
-        session.setCurrentStep("PRODUCTS_SENT_" + collectionType + "_" + priceBucket);
+        session.setCurrentStep("PRODUCTS_SENT_" + collectionType + "_" + priceBucket + "_" + stylePayload);
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
+
+
+//    private void sendPriceSelection(String phone) {
+//        karixApiService.sendButtonMessage(
+//                phone,
+//                "💎 *Every budget deserves a masterpiece.*\n\n"
+//                        + "Select your preferred range and we'll curate the finest Titan timepieces for you:",
+//                List.of(
+//                        Map.of("title", "₹2k - ₹5k", "payload", "PRICE_2K_5K"),
+//                        Map.of("title", "₹5k - ₹10k", "payload", "PRICE_5K_10K"),
+//                        Map.of("title", "₹10k - ₹25k", "payload", "PRICE_10K_25K"),
+//                        Map.of("title", "₹25k+", "payload", "PRICE_25K_PLUS")
+//                )
+//        );
+//    }
+
+
+
+
+
     private void sendPriceSelection(String phone) {
-        karixApiService.sendButtonMessage(
+        karixApiService.sendListMessage(
                 phone,
                 "💎 *Every budget deserves a masterpiece.*\n\n"
                         + "Select your preferred range and we'll curate the finest Titan timepieces for you:",
@@ -496,6 +596,7 @@ private  final ProductCatalogService productCatalogService;
                 )
         );
     }
+
     private void handleStyleSelected(
             String phone,
             BotSession session,
@@ -521,6 +622,8 @@ private  final ProductCatalogService productCatalogService;
         session.setLastActivity(LocalDateTime.now());
         botSessionRepository.save(session);
     }
+
+
     private void sendCollectionSelection(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
@@ -529,8 +632,8 @@ private  final ProductCatalogService productCatalogService;
                         + "Which collection speaks to you?",
                 List.of(
                         Map.of("title", "Men's Collection", "payload", "MENS_COLLECTION"),
-                        Map.of("title", "Women's Collection", "payload", "WOMENS_COLLECTION"),
-                        Map.of("title", "Couples Watches", "payload", "COUPLES_WATCHES")
+                        Map.of("title", "Women's Collection", "payload", "WOMENS_COLLECTION")
+
                 )
         );
     }

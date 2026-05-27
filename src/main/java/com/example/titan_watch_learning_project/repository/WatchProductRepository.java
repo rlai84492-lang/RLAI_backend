@@ -15,4 +15,11 @@ public interface WatchProductRepository extends JpaRepository<WatchProduct, Long
     List<WatchProduct> findTop6ByCollectionTypeAndActiveTrueOrderByIdAsc(
             String collectionType
     );
+
+
+    List<WatchProduct> findTop6ByCollectionTypeAndPriceBucketAndStyleAndActiveTrueOrderByIdAsc(
+            String collectionType,
+            String priceBucket,
+            String style
+    );
 }

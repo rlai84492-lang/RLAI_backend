@@ -26,5 +26,8 @@ public class WatchProduct {
     @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
+    @Column(name = "style")
+    private String style;
+
     private Boolean active = true;
 }

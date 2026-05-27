@@ -33,4 +33,20 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         return watchProductRepository
                 .findTop6ByCollectionTypeAndActiveTrueOrderByIdAsc(collectionType);
     }
+    @Override
+    public List<WatchProduct> getProductsByCollectionPriceAndStyle(
+            String collectionType,
+            String priceBucket,
+            String style
+    ) {
+        return watchProductRepository
+                .findTop6ByCollectionTypeAndPriceBucketAndStyleAndActiveTrueOrderByIdAsc(
+                        collectionType,
+                        priceBucket,
+                        style
+                );
+    }
+
+
+
 }

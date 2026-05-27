@@ -12,4 +12,11 @@ public interface ProductCatalogService {
     );
 
     List<WatchProduct> getProductsByCollection(String collectionType);
+
+
+    List<WatchProduct> getProductsByCollectionPriceAndStyle(
+            String collectionType,
+            String priceBucket,
+            String style
+    );
 }
