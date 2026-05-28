@@ -280,8 +280,37 @@ public class KarixApiServiceImpl {
     }
 
 
+//    public void sendListMessage(String toPhone, String bodyText, List<Map<String, String>> options) {
+//        Map<String, Object> body = buildListPayload(toPhone, bodyText, options);
+//        post(body, toPhone, "LIST_MESSAGE");
+//    }
+
     public void sendListMessage(String toPhone, String bodyText, List<Map<String, String>> options) {
-        Map<String, Object> body = buildListPayload(toPhone, bodyText, options);
+        Map<String, Object> body = buildListPayload(
+                toPhone,
+                bodyText,
+                "View Options",
+                "Choose an option",
+                options
+        );
+        post(body, toPhone, "LIST_MESSAGE");
+    }
+
+
+    public void sendListMessage(
+            String toPhone,
+            String bodyText,
+            String buttonText,
+            String sectionTitle,
+            List<Map<String, String>> options
+    ) {
+        Map<String, Object> body = buildListPayload(
+                toPhone,
+                bodyText,
+                buttonText,
+                sectionTitle,
+                options
+        );
         post(body, toPhone, "LIST_MESSAGE");
     }
 
@@ -436,9 +465,73 @@ public class KarixApiServiceImpl {
         return requestBody;
     }
 
+//    private Map<String, Object> buildListPayload(
+//            String toPhone,
+//            String bodyText,
+//            List<Map<String, String>> options
+//    ) {
+//        Map<String, Object> reference = new LinkedHashMap<>();
+//        reference.put("cust_ref", "titan_" + System.currentTimeMillis());
+//
+//        Map<String, Object> recipient = new LinkedHashMap<>();
+//        recipient.put("to", toPhone);
+//        recipient.put("recipient_type", "individual");
+//        recipient.put("reference", reference);
+//
+//        Map<String, Object> sender = new LinkedHashMap<>();
+//        sender.put("from", wabaNumber);
+//
+//        List<Map<String, Object>> rows = options.stream()
+//                .map(option -> {
+//                    Map<String, Object> row = new LinkedHashMap<>();
+//                    row.put("id", option.get("payload"));
+//                    row.put("title", option.get("title"));
+//                    row.put("description", "Tap to select");
+//                    return row;
+//                })
+//                .toList();
+//
+//        Map<String, Object> section = new LinkedHashMap<>();
+//        section.put("title", "Choose your style");
+//        section.put("rows", rows);
+//
+//        Map<String, Object> action = new LinkedHashMap<>();
+//        action.put("button", "View Styles");
+//        action.put("sections", List.of(section));
+//
+//        Map<String, Object> interactive = new LinkedHashMap<>();
+//        interactive.put("type", "list");
+//        interactive.put("body", Map.of("text", bodyText));
+//        interactive.put("action", action);
+//
+//        Map<String, Object> content = new LinkedHashMap<>();
+//        content.put("type", "INTERACTIVE");
+//        content.put("interactive", interactive);
+//
+//        Map<String, Object> message = new LinkedHashMap<>();
+//        message.put("channel", "WABA");
+//        message.put("recipient", recipient);
+//        message.put("sender", sender);
+//        message.put("content", content);
+//
+//        Map<String, Object> metaData = new LinkedHashMap<>();
+//        metaData.put("version", "v1.0.9");
+//
+//        Map<String, Object> requestBody = new LinkedHashMap<>();
+//        requestBody.put("message", message);
+//        requestBody.put("metaData", metaData);
+//
+//        return requestBody;
+//    }
+
+
+
+
     private Map<String, Object> buildListPayload(
             String toPhone,
             String bodyText,
+            String buttonText,
+            String sectionTitle,
             List<Map<String, String>> options
     ) {
         Map<String, Object> reference = new LinkedHashMap<>();
@@ -457,17 +550,17 @@ public class KarixApiServiceImpl {
                     Map<String, Object> row = new LinkedHashMap<>();
                     row.put("id", option.get("payload"));
                     row.put("title", option.get("title"));
-                    row.put("description", "Tap to select");
+                    row.put("description", option.getOrDefault("description", "Tap to select"));
                     return row;
                 })
                 .toList();
 
         Map<String, Object> section = new LinkedHashMap<>();
-        section.put("title", "Choose your style");
+        section.put("title", sectionTitle);
         section.put("rows", rows);
 
         Map<String, Object> action = new LinkedHashMap<>();
-        action.put("button", "View Styles");
+        action.put("button", buttonText);
         action.put("sections", List.of(section));
 
         Map<String, Object> interactive = new LinkedHashMap<>();
@@ -494,7 +587,6 @@ public class KarixApiServiceImpl {
 
         return requestBody;
     }
-
 
 
 

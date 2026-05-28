@@ -26,13 +26,18 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
                 );
     }
 
-
-
     @Override
-    public List<WatchProduct> getProductsByCollection(String collectionType) {
+    public List<WatchProduct> getProductsByCollectionAndPriceBuckets(
+            String collectionType,
+            List<String> priceBuckets
+    ) {
         return watchProductRepository
-                .findTop6ByCollectionTypeAndActiveTrueOrderByIdAsc(collectionType);
+                .findTop6ByCollectionTypeAndPriceBucketInAndActiveTrueOrderByIdAsc(
+                        collectionType,
+                        priceBuckets
+                );
     }
+
     @Override
     public List<WatchProduct> getProductsByCollectionPriceAndStyle(
             String collectionType,
@@ -47,6 +52,9 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
                 );
     }
 
-
-
+    @Override
+    public List<WatchProduct> getProductsByCollection(String collectionType) {
+        return watchProductRepository
+                .findTop6ByCollectionTypeAndActiveTrueOrderByIdAsc(collectionType);
+    }
 }
