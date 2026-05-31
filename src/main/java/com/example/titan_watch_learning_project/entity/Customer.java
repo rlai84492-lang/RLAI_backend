@@ -2,6 +2,8 @@ package com.example.titan_watch_learning_project.entity;//package com.example.ti
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,7 +38,23 @@ public class Customer {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "birthday_month")
+    private String birthdayMonth;
+
+    @Column(name = "anniversary_date")
+    private LocalDate anniversaryDate;
+
+    @Column(name = "anniversary_month")
+    private String anniversaryMonth;
+
+
     @Column(name = "created_at")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+
+
 }

@@ -14,6 +14,8 @@ public class BotSession {
 
     @Column(name = "customer_id")
     private Long customerId;
+    @Column(name = "selected_brand")
+    private String selectedBrand;
 
     @Column(nullable = false)
     private String phone;
@@ -54,7 +56,7 @@ public class BotSession {
     @Builder.Default
     private Boolean isActive = true;
 
-    public enum Collection { MENS, WOMENS }
+    public enum Collection { MENS, WOMENS,COUPLES }
     public enum Style { MINIMAL_CHIC, BOLD_EDGY, LUXE_CLASSY, SPORTY_ADVENTUROUS }
     public enum CampaignType { T10, TDAY }
 }

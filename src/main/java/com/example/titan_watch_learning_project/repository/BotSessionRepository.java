@@ -15,4 +15,6 @@ public interface BotSessionRepository extends JpaRepository<BotSession, Long> {
     Optional<BotSession> findTopByPhoneAndIsActiveTrueOrderByLastActivityDesc(String phone);
 
     void deleteByPhone(String phone);
+
+    Optional<BotSession> findTopByPhoneOrderByLastActivityDesc(String phone);
 }
