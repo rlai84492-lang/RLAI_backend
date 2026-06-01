@@ -91,7 +91,7 @@ public class KarixApiServiceImpl {
     private static final String STORE_LOCATOR_URL = "https://www.titan.co.in/store-locator";
 
     private static final String SAFE_BRAND_IMAGE =
-            "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwbbb6e3e0/images/Titan/Catalog/90251QP01C_1.jpg?sw=600&sh=600";
+            "https://titanwatchimages123.blob.core.windows.net/watch-images/WhatsApp%20Image%202026-06-01%20at%2023.09.58.jpeg";
 
     private static final Map<String, String> BRAND_IMAGE_URLS = Map.ofEntries(
             Map.entry("TITAN_EDGE", SAFE_BRAND_IMAGE),

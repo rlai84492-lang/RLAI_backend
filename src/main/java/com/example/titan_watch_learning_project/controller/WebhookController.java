@@ -36,7 +36,7 @@ public class WebhookController {
         return ResponseEntity.ok("Titan Webhook Service is running ✅");
     }
 
-    @PostMapping
+    @PostMapping({"", "/"})
     public ResponseEntity<String> receiveWebhook(@RequestBody String payload) {
         log.info("Webhook hit — payload length: {}", payload == null ? 0 : payload.length());
 

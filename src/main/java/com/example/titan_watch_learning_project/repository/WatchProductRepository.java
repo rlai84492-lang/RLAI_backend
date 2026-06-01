@@ -32,6 +32,7 @@ import com.example.titan_watch_learning_project.entity.WatchProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WatchProductRepository extends JpaRepository<WatchProduct, Long> {
 
@@ -54,4 +55,10 @@ public interface WatchProductRepository extends JpaRepository<WatchProduct, Long
     List<WatchProduct> findTop6ByCollectionTypeAndActiveTrueOrderByIdAsc(
             String collectionType
     );
+
+    Optional<WatchProduct> findFirstByBrandIgnoreCaseAndImageUrlIsNotNullAndImageUrlNotOrderByIdAsc(
+            String brand,
+            String emptyImageUrl
+    );
+
 }
