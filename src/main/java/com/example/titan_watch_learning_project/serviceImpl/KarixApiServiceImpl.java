@@ -1,6 +1,7 @@
 
 package com.example.titan_watch_learning_project.serviceImpl;
 
+import com.example.titan_watch_learning_project.entity.BrandCarouselCard;
 import com.example.titan_watch_learning_project.entity.WatchProduct;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -272,6 +273,165 @@ public class KarixApiServiceImpl {
 
         } catch (Exception e) {
             log.error("Failed to send brand carousel phone={} gender={}", phone, gender, e);
+            return false;
+        }
+    }
+
+
+
+
+
+
+    public boolean sendBrandCarouselMessageFromDbCards(
+            String phone,
+            String firstName,
+            String gender,
+            List<BrandCarouselCard> dbCards
+    ) {
+        if (dbCards == null || dbCards.size() < 2) {
+            log.warn("Brand carousel requires at least 2 DB cards. Found={}",
+                    dbCards == null ? 0 : dbCards.size());
+            return false;
+        }
+
+        try {
+            List<Map<String, Object>> cards = new ArrayList<>();
+
+            for (int i = 0; i < Math.min(dbCards.size(), 10); i++) {
+                BrandCarouselCard dbCard = dbCards.get(i);
+
+                String brandKey = dbCard.getBrandKey() == null || dbCard.getBrandKey().isBlank()
+                        ? "TITAN"
+                        : dbCard.getBrandKey().trim().toUpperCase();
+
+                String title = dbCard.getTitle() == null || dbCard.getTitle().isBlank()
+                        ? brandKey.replace("_", " ")
+                        : dbCard.getTitle().trim();
+
+                String description = dbCard.getDescription() == null || dbCard.getDescription().isBlank()
+                        ? ""
+                        : dbCard.getDescription().trim();
+
+                String imageUrl = dbCard.getImageUrl() == null || dbCard.getImageUrl().isBlank()
+                        ? ""
+                        : dbCard.getImageUrl().trim();
+
+                if (imageUrl.isBlank()) {
+                    log.warn("Skipping brand carousel card id={} brandKey={} because imageUrl is blank",
+                            dbCard.getId(), brandKey);
+                    continue;
+                }
+
+                String bodyText = title + (description.isBlank() ? "" : "\n" + description);
+
+                if (bodyText.length() > 120) {
+                    bodyText = bodyText.substring(0, 117) + "...";
+                }
+
+                Map<String, Object> image = new LinkedHashMap<>();
+                image.put("link", imageUrl);
+
+                Map<String, Object> header = new LinkedHashMap<>();
+                header.put("type", "image");
+                header.put("image", image);
+
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("text", bodyText);
+
+                String genderCode = "MEN".equalsIgnoreCase(gender) ? "M" : "W";
+                String brandCode = getShortBrandCode(brandKey);
+
+                String explorePayload = "EX_" + genderCode + "_" + brandCode + "_" + cards.size();
+                String callbackPayload = "CB_" + genderCode + "_" + brandCode + "_" + cards.size();
+
+                Map<String, Object> exploreReply = new LinkedHashMap<>();
+                exploreReply.put("id", explorePayload);
+                exploreReply.put("title", "Explore collection");
+
+                Map<String, Object> exploreButton = new LinkedHashMap<>();
+                exploreButton.put("type", "quick_reply");
+                exploreButton.put("quick_reply", exploreReply);
+
+                Map<String, Object> callbackReply = new LinkedHashMap<>();
+                callbackReply.put("id", callbackPayload);
+                callbackReply.put("title", "Request callback");
+
+                Map<String, Object> callbackButton = new LinkedHashMap<>();
+                callbackButton.put("type", "quick_reply");
+                callbackButton.put("quick_reply", callbackReply);
+
+                Map<String, Object> action = new LinkedHashMap<>();
+                action.put("buttons", List.of(exploreButton, callbackButton));
+
+                Map<String, Object> card = new LinkedHashMap<>();
+                card.put("card_index", cards.size());
+                card.put("type", "cta_url");
+                card.put("header", header);
+                card.put("body", body);
+                card.put("action", action);
+
+                cards.add(card);
+            }
+
+            if (cards.size() < 2) {
+                log.warn("Brand carousel has less than 2 valid DB cards. Valid cards={}", cards.size());
+                return false;
+            }
+
+            Map<String, Object> carouselBody = new LinkedHashMap<>();
+            carouselBody.put(
+                    "text",
+                    "✨ *Exclusive Collections for You*\n\n"
+                            + "Hi *" + firstName + "*,\n\n"
+                            + "Here are our collections for you.\n\n"
+                            + "👉 *Tap any brand to explore*\n"
+                            + "💬 Or tell us if you'd like help choosing!"
+            );
+
+            Map<String, Object> carouselAction = new LinkedHashMap<>();
+            carouselAction.put("cards", cards);
+
+            Map<String, Object> interactive = new LinkedHashMap<>();
+            interactive.put("type", "carousel");
+            interactive.put("body", carouselBody);
+            interactive.put("action", carouselAction);
+
+            Map<String, Object> content = new LinkedHashMap<>();
+            content.put("type", "INTERACTIVE");
+            content.put("preview_url", false);
+            content.put("shorten_url", false);
+            content.put("interactive", interactive);
+
+            Map<String, Object> reference = new LinkedHashMap<>();
+            reference.put("cust_ref", "titan_brand_carousel_" + System.currentTimeMillis());
+            reference.put("messageTag1", "Titan Brand Carousel");
+            reference.put("conversationId", "titan_brand_" + phone + "_" + System.currentTimeMillis());
+
+            Map<String, Object> recipient = new LinkedHashMap<>();
+            recipient.put("to", phone);
+            recipient.put("recipient_type", "individual");
+            recipient.put("reference", reference);
+
+            Map<String, Object> sender = new LinkedHashMap<>();
+            sender.put("from", wabaNumber);
+
+            Map<String, Object> message = new LinkedHashMap<>();
+            message.put("channel", "WABA");
+            message.put("content", content);
+            message.put("recipient", recipient);
+            message.put("sender", sender);
+
+            Map<String, Object> metaData = new LinkedHashMap<>();
+            metaData.put("version", "v1.0.9");
+
+            Map<String, Object> requestBody = new LinkedHashMap<>();
+            requestBody.put("message", message);
+            requestBody.put("metaData", metaData);
+
+            return post(requestBody, phone, "BRAND_CAROUSEL_DB_" + gender);
+
+        } catch (Exception e) {
+            log.error("Failed to send DB brand carousel phone={} gender={}", phone, gender, e);
             return false;
         }
     }

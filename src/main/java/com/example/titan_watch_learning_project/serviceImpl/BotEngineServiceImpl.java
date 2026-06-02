@@ -1,6 +1,8 @@
 package com.example.titan_watch_learning_project.serviceImpl;
 import com.example.titan_watch_learning_project.entity.BotSession;
+import com.example.titan_watch_learning_project.entity.BrandCarouselCard;
 import com.example.titan_watch_learning_project.repository.BotSessionRepository;
+import com.example.titan_watch_learning_project.repository.BrandCarouselCardRepository;
 import com.example.titan_watch_learning_project.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ private  final ProductCatalogService productCatalogService;
     private final CustomerRepository customerRepository;
     private final TaskScheduler taskScheduler;
 
+    private final BrandCarouselCardRepository brandCarouselCardRepository;
 
 
 
@@ -605,6 +608,7 @@ private  final ProductCatalogService productCatalogService;
         // ----------------------------------------------------
         // STEP 1: See birthday offers
         // ----------------------------------------------------
+
         if ("SEE_BIRTHDAY_OFFERS".equals(cleanPayload)
                 || "BIRTHDAY_OFFERS".equals(cleanPayload)
                 || "EXCLUSIVE_BIRTHDAY_OFFERS".equals(cleanPayload)) {
@@ -1082,6 +1086,7 @@ private  final ProductCatalogService productCatalogService;
         );
     }
 
+
     private void sendGenderSelection(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
@@ -1094,13 +1099,30 @@ private  final ProductCatalogService productCatalogService;
         );
     }
 
+//    private boolean sendBrandCarousel(String phone, String firstName, String gender) {
+//    if ("MEN".equalsIgnoreCase(gender)) {
+//        return karixApiService.sendBrandCarouselMessage(phone, firstName, "MEN", MEN_BRANDS);
+//    }
+//
+//    return karixApiService.sendBrandCarouselMessage(phone, firstName, "WOMEN", WOMEN_BRANDS);
+//}
+
+
     private boolean sendBrandCarousel(String phone, String firstName, String gender) {
-    if ("MEN".equalsIgnoreCase(gender)) {
-        return karixApiService.sendBrandCarouselMessage(phone, firstName, "MEN", MEN_BRANDS);
+
+        List<BrandCarouselCard> cards =
+                brandCarouselCardRepository.findByGenderIgnoreCaseAndActiveTrueOrderByDisplayOrderAscIdAsc(gender);
+
+        log.info("Brand carousel cards from DB gender={} count={}", gender, cards.size());
+
+        return karixApiService.sendBrandCarouselMessageFromDbCards(
+                phone,
+                firstName,
+                gender,
+                cards
+        );
     }
 
-    return karixApiService.sendBrandCarouselMessage(phone, firstName, "WOMEN", WOMEN_BRANDS);
-}
 
     private void sendCatalogue(String phone, String firstName, String gender, String brandKey) {
         String brandName = toBrandDisplayName(brandKey);
