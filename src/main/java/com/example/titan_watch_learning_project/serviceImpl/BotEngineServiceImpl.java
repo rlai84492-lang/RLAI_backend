@@ -69,6 +69,162 @@ private  final ProductCatalogService productCatalogService;
         );
     }
 
+
+    private void sendAnniversaryTDayAccountBenefitIntro(String phone, String firstName) {
+        karixApiService.sendButtonMessage(
+                phone,
+                "💍 *Anniversary Benefit Activated*\n\n"
+                        + "Hi *" + firstName + "*, our records show that your annual account benefit has been updated.\n\n"
+                        + "A *10% anniversary discount code* is now active on your profile and can be redeemed at the nearest *Titan World* store.\n\n"
+                        + "This benefit is valid for the next *21 days*.\n\n"
+                        + "Tap below:",
+                List.of(
+                        Map.of("title", "View Account Benefit", "payload", "ANNIV_VIEW_BENEFIT"),
+                        Map.of("title", "Locate Nearest Store", "payload", "ANNIV_LOCATE_STORE")
+                )
+        );
+    }
+
+    private void sendAnniversaryTDayWish(String phone, String firstName) {
+        karixApiService.sendButtonMessage(
+                phone,
+                "🎉 *HAPPY ANNIVERSARY, " + firstName + "!*\n\n"
+                        + "May this day be filled with exceptional moments — and many more years of beautiful time together.\n\n"
+                        + "Enjoy up to *10% discount* on your purchase at the nearest *Titan World* store for the next *21 days*.\n\n"
+                        + "Once again, a very happy anniversary from all of us at *Titan World*!",
+                List.of(
+                        Map.of("title", "Locate Store", "payload", "ANNIV_LOCATE_STORE")
+                )
+        );
+    }
+
+    private void sendAnniversaryTDayStoreHelp(String phone) {
+        karixApiService.sendButtonMessage(
+                phone,
+                "📍 *Store Visit Assistance*\n\n"
+                        + "Hope you found your nearest store.\n\n"
+                        + "If you need help, our expert can call you and book an appointment.",
+                List.of(
+                        Map.of("title", "Request Callback", "payload", "ANNIV_REQUEST_CALLBACK")
+                )
+        );
+    }
+
+    private void sendAnniversaryTDayCallbackConfirmation(String phone) {
+        karixApiService.sendTextMessage(
+                phone,
+                "✅ *Done. Our team will be in touch.*\n\n"
+                        + "One of our *Titan experts* will call you to help you with the one that caught your eye.\n\n"
+                        + "In the meantime, feel free to see the curated collection."
+        );
+    }
+
+    private void sendAnniversaryTDayFollowUp(String phone, String firstName) {
+        karixApiService.sendButtonMessage(
+                phone,
+                "⏳ *Your anniversary offer is still live, " + firstName + ".*\n\n"
+                        + "A few hours left today — and we'd hate for you to miss it.\n\n"
+                        + "Visit your nearest store or book an appointment with an expert.",
+                List.of(
+                        Map.of("title", "Visit Store Today", "payload", "ANNIV_VISIT_STORE_TODAY"),
+                        Map.of("title", "Request Callback", "payload", "ANNIV_REQUEST_CALLBACK")
+                )
+        );
+    }
+
+    private void sendAnniversaryTDayExit(String phone, String firstName) {
+        karixApiService.sendButtonMessage(
+                phone,
+                "💍 *Hope you had a wonderful anniversary, " + firstName + ".*\n\n"
+                        + "The *Titan World* family is always here when you're ready.\n\n"
+                        + "Visit us anytime — no anniversary needed.",
+                List.of(
+                        Map.of("title", "Visit us anytime", "payload", "ANNIV_VISIT_US_ANYTIME")
+                )
+        );
+    }
+
+
+    private boolean isAnniversaryTDayFlowStep(String step) {
+        if (step == null || step.isBlank()) {
+            return false;
+        }
+
+        return "ANNIVERSARY_T_DAY_TEMPLATE_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_WISH_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_STORE_LOCATOR_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_STEP_6B_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_CALLBACK_CONFIRMED".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_STEP_7_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_STEP_7_STORE_SENT".equalsIgnoreCase(step)
+                || "ANNIVERSARY_T_DAY_STEP_7_CALLBACK_CONFIRMED".equalsIgnoreCase(step);
+    }
+
+
+    private void scheduleAnniversaryTDayStep6b(String phone, Long customerId, String firstName) {
+        taskScheduler.schedule(() -> {
+            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
+
+            if (latest == null) {
+                return;
+            }
+
+            if (!"ANNIVERSARY_T_DAY_STORE_LOCATOR_SENT".equalsIgnoreCase(latest.getCurrentStep())) {
+                return;
+            }
+
+            sendAnniversaryTDayStoreHelp(phone);
+
+            latest.setCurrentStep("ANNIVERSARY_T_DAY_STEP_6B_SENT");
+            latest.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(latest);
+
+        }, Instant.now().plusSeconds(ANNIVERSARY_TDAY_STEP_6B_DELAY_SECONDS));
+    }
+
+    private void scheduleAnniversaryTDayStep7(String phone, Long customerId, String firstName) {
+        taskScheduler.schedule(() -> {
+            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
+
+            if (latest == null) {
+                return;
+            }
+
+            if (!"ANNIVERSARY_T_DAY_CALLBACK_CONFIRMED".equalsIgnoreCase(latest.getCurrentStep())) {
+                return;
+            }
+
+            sendAnniversaryTDayFollowUp(phone, firstName);
+
+            latest.setCurrentStep("ANNIVERSARY_T_DAY_STEP_7_SENT");
+            latest.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(latest);
+
+        }, Instant.now().plusSeconds(ANNIVERSARY_TDAY_STEP_7_DELAY_SECONDS));
+    }
+
+    private void scheduleAnniversaryTDayStep8(String phone, Long customerId, String firstName) {
+        taskScheduler.schedule(() -> {
+            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
+
+            if (latest == null) {
+                return;
+            }
+
+            if (!"ANNIVERSARY_T_DAY_STEP_7_CALLBACK_CONFIRMED".equalsIgnoreCase(latest.getCurrentStep())) {
+                return;
+            }
+
+            sendAnniversaryTDayExit(phone, firstName);
+
+            latest.setCurrentStep("ANNIVERSARY_T_DAY_FLOW_ENDED");
+            latest.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(latest);
+
+        }, Instant.now().plusSeconds(ANNIVERSARY_TDAY_STEP_8_DELAY_SECONDS));
+    }
+
+
     private void sendCallbackConfirmationWithExplore(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
@@ -275,6 +431,70 @@ private  final ProductCatalogService productCatalogService;
 
         log.info("Current session step for {}: {} cleanPayload={}",
                 phone, session.getCurrentStep(), cleanPayload);
+
+
+        String routePayload = cleanPayload
+                .replaceAll("_+", "_")
+                .replaceAll("^_|_$", "");
+
+        log.info("Routing payload phone={} cleanPayload={} routePayload={}",
+                phone, cleanPayload, routePayload);
+
+
+
+        // ----------------------------------------------------
+// GLOBAL TESTING OVERRIDES
+// Must run before ANNIVERSARY_DATE_PENDING / DOB_CORRECTION_PENDING
+// Existing cleanPayload logic untouched.
+// ----------------------------------------------------
+
+        if ("ANNIVERSARY_DAY_T".equals(routePayload)
+                || "ANNIVERSARY_T_DAY".equals(routePayload)
+                || "ANNIVERSARY_DAY".equals(routePayload)
+                || "HAPPY_ANNIVERSARY".equals(routePayload)
+                || "ANNIVERSARY_DAY_FLOW".equals(routePayload)) {
+
+            log.info("Starting ANNIVERSARY T-DAY flow phone={} routePayload={}", phone, routePayload);
+
+            sendAnniversaryTDayAccountBenefitIntro(phone, firstName);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_TEMPLATE_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+        if ("CONFIRM_DETAILS".equals(routePayload)
+                || "CONFIRM_DETAIL".equals(routePayload)
+                || "CONFIRM".equals(routePayload)) {
+
+            log.info("Starting BIRTHDAY T-10 confirm details flow phone={} routePayload={}", phone, routePayload);
+
+            session.setCurrentStep("BIRTHDAY_CONFIRM_DETAILS");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+
+            sendDobConfirmationButtons(phone, firstName);
+            return;
+        }
+
+        if ("ANNIVERSARY".equals(routePayload)
+                || "ANNIVARY".equals(routePayload)
+                || "ANNIVERSARY_FLOW".equals(routePayload)) {
+
+            log.info("Starting ANNIVERSARY T-10 flow phone={} routePayload={}", phone, routePayload);
+
+            session.setCurrentStep("ANNIVERSARY_CONFIRMATION_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+
+            sendAnniversaryConfirmationButtons(
+                    phone,
+                    firstName,
+                    getAnniversaryMonthForMessage(customerId)
+            );
+            return;
+        }
 
 
 
@@ -517,6 +737,92 @@ private  final ProductCatalogService productCatalogService;
             return;
         }
 
+
+
+
+
+
+        // ----------------------------------------------------
+// ANNIVERSARY T-DAY TESTING START
+// User manually types: Anniversary Day - T
+// Future approved template payloads:
+// View Account Benefit -> ANNIV_VIEW_BENEFIT
+// Locate Nearest Store -> ANNIV_LOCATE_STORE
+// ----------------------------------------------------
+        if ("ANNIVERSARY_DAY_T".equals(cleanPayload)
+                || "ANNIVERSARY_T_DAY".equals(cleanPayload)
+                || "ANNIVERSARY_DAY".equals(cleanPayload)
+                || "HAPPY_ANNIVERSARY".equals(cleanPayload)
+                || "ANNIVERSARY_DAY_FLOW".equals(cleanPayload)) {
+
+            sendAnniversaryTDayAccountBenefitIntro(phone, firstName);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_TEMPLATE_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+        if ("ANNIV_VIEW_BENEFIT".equals(cleanPayload)
+                || "ANNIVERSARY_VIEW_BENEFIT".equals(cleanPayload)
+                || "ANNIV_VIEW_ACCOUNT_BENEFIT".equals(cleanPayload)
+                || (
+                "ANNIVERSARY_T_DAY_TEMPLATE_SENT".equalsIgnoreCase(session.getCurrentStep())
+                        && ("VIEW_ACCOUNT_BENEFIT".equals(cleanPayload)
+                        || "VIEW_BENEFIT".equals(cleanPayload))
+        )) {
+
+            sendAnniversaryTDayWish(phone, firstName);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_WISH_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+        if ("ANNIV_LOCATE_STORE".equals(cleanPayload)
+                || "ANNIV_LOCATE_NEAREST_STORE".equals(cleanPayload)
+                || "ANNIVERSARY_LOCATE_STORE".equals(cleanPayload)
+                || (
+                isAnniversaryTDayFlowStep(session.getCurrentStep())
+                        && ("LOCATE_NEAREST_STORE".equals(cleanPayload)
+                        || "LOCATE_STORE".equals(cleanPayload))
+        )) {
+
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_STORE_LOCATOR_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+
+            scheduleAnniversaryTDayStep6b(phone, customerId, firstName);
+            return;
+        }
+
+        if ("ANNIV_VISIT_STORE_TODAY".equals(cleanPayload)) {
+
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+
+            sendAnniversaryTDayStoreHelp(phone);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_STEP_7_STORE_SENT");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+        if ("ANNIV_VISIT_US_ANYTIME".equals(cleanPayload)) {
+
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+
+            session.setCurrentStep("ANNIVERSARY_T_DAY_FLOW_ENDED");
+            session.setLastActivity(LocalDateTime.now());
+            botSessionRepository.save(session);
+            return;
+        }
+
+
+
         // ----------------------------------------------------
         // T-DAY TESTING START
         // User manually types: View Account Benefit / Locate Nearest Store
@@ -717,8 +1023,13 @@ private  final ProductCatalogService productCatalogService;
             log.info("EXPLORE resolved gender={} brandCode={} brandKey={}",
                     gender, brandCode, brandKey);
 
-            sendCatalogue(phone, firstName, gender, brandKey);
+            boolean anniversaryFlow =
+                    "ANNIVERSARY_MEN_BRAND_CAROUSEL".equalsIgnoreCase(previousStep)
+                            || "ANNIVERSARY_WOMEN_BRAND_CAROUSEL".equalsIgnoreCase(previousStep)
+                            || "ANNIVERSARY_GENDER_SELECTION".equalsIgnoreCase(previousStep)
+                            || "ANNIVERSARY_OPENER".equalsIgnoreCase(previousStep);
 
+            sendCatalogue(phone, firstName, gender, brandKey, anniversaryFlow);
             if ("ANNIVERSARY_MEN_BRAND_CAROUSEL".equalsIgnoreCase(previousStep)
                     || "ANNIVERSARY_WOMEN_BRAND_CAROUSEL".equalsIgnoreCase(previousStep)) {
 
@@ -804,9 +1115,21 @@ private  final ProductCatalogService productCatalogService;
                 return;
             }
 
+//            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+//
+//            sendStoreHelpMessage(phone);
+//
+//            session.setCurrentStep("STORE_VISIT_SENT");
+//            session.setLastActivity(LocalDateTime.now());
+//            botSessionRepository.save(session);
+//            return;
+
+
             karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
 
-            sendStoreHelpMessage(phone);
+            taskScheduler.schedule(() -> {
+                sendStoreHelpMessage(phone);
+            }, Instant.now().plusSeconds(2));
 
             session.setCurrentStep("STORE_VISIT_SENT");
             session.setLastActivity(LocalDateTime.now());
@@ -849,15 +1172,123 @@ private  final ProductCatalogService productCatalogService;
         // ----------------------------------------------------
         // Callback / Book appointment
         // ----------------------------------------------------
+//        if ("REQUEST_CALLBACK".equals(cleanPayload)
+//                || cleanPayload.startsWith("REQUEST_CALLBACK_")
+//                || "REQUEST_A_CALLBACK".equals(cleanPayload)
+//                || "BOOK_AN_APPOINTMENT".equals(cleanPayload)
+//                || "INTERESTED".equals(cleanPayload)
+//                || "SPEAK_WITH_EXPERT".equals(cleanPayload)) {
+//
+//
+//            String previousStep = session.getCurrentStep();
+//
+//            if ("ANNIV_REQUEST_CALLBACK".equals(cleanPayload)
+//                    || (
+//                    "REQUEST_CALLBACK".equals(cleanPayload)
+//                            && isAnniversaryTDayFlowStep(previousStep)
+//            )) {
+//
+//                sendAnniversaryTDayCallbackConfirmation(phone);
+//
+//                if ("ANNIVERSARY_T_DAY_STEP_7_SENT".equalsIgnoreCase(previousStep)
+//                        || "ANNIVERSARY_T_DAY_STEP_7_STORE_SENT".equalsIgnoreCase(previousStep)) {
+//
+//                    session.setCurrentStep("ANNIVERSARY_T_DAY_STEP_7_CALLBACK_CONFIRMED");
+//                    session.setLastActivity(LocalDateTime.now());
+//                    botSessionRepository.save(session);
+//
+//                    scheduleAnniversaryTDayStep8(phone, customerId, firstName);
+//                    return;
+//                }
+//
+//                session.setCurrentStep("ANNIVERSARY_T_DAY_CALLBACK_CONFIRMED");
+//                session.setLastActivity(LocalDateTime.now());
+//                botSessionRepository.save(session);
+//
+//                scheduleAnniversaryTDayStep7(phone, customerId, firstName);
+//                return;
+//            }
+//
+//
+//
+//            if ("ANNIVERSARY_STEP_4A_SENT".equalsIgnoreCase(previousStep)
+//                    || "ANNIVERSARY_STORE_VISIT_SENT".equalsIgnoreCase(previousStep)
+//                    || "ANNIVERSARY_CATALOGUE_SENT".equalsIgnoreCase(previousStep)
+//                    || "ANNIVERSARY_COUPLE_CATALOGUE_SENT".equalsIgnoreCase(previousStep)) {
+//
+//                sendAnniversaryCallbackConfirmation(phone);
+//
+//                session.setCurrentStep("ANNIVERSARY_CALLBACK_CONFIRMED");
+//                session.setLastActivity(LocalDateTime.now());
+//                botSessionRepository.save(session);
+//                return;
+//            }
+//
+//
+//
+//
+//            sendCallbackConfirmation(phone);
+//
+//            // Step 7 ke baad user callback click kare,
+//            // then Step 8 scheduler trigger hoga.
+//            if ("STEP_7_SENT".equalsIgnoreCase(previousStep)
+//                    || "STEP_7_STORE_SENT".equalsIgnoreCase(previousStep)) {
+//
+//                session.setCurrentStep("STEP_7_CALLBACK_CONFIRMED");
+//                session.setLastActivity(LocalDateTime.now());
+//                botSessionRepository.save(session);
+//
+//                scheduleStep8(phone, customerId, firstName);
+//                return;
+//            }
+//
+//            // T-Day Step 6b ke baad callback click kare,
+//            // then Step 7 scheduler trigger hoga.
+//            session.setCurrentStep("CALLBACK_CONFIRMED");
+//            session.setLastActivity(LocalDateTime.now());
+//            botSessionRepository.save(session);
+//
+//            if ("STEP_6B_SENT".equalsIgnoreCase(previousStep)
+//                    || "T_DAY_STORE_LOCATOR_SENT".equalsIgnoreCase(previousStep)
+//                    || "BIRTHDAY_WISH_SENT".equalsIgnoreCase(previousStep)) {
+//
+//                scheduleStep7(phone, customerId, firstName);
+//            }
+//
+//            return;
+//        }
+
+
+
+
+
+
         if ("REQUEST_CALLBACK".equals(cleanPayload)
                 || cleanPayload.startsWith("REQUEST_CALLBACK_")
                 || "REQUEST_A_CALLBACK".equals(cleanPayload)
                 || "BOOK_AN_APPOINTMENT".equals(cleanPayload)
                 || "INTERESTED".equals(cleanPayload)
-                || "SPEAK_WITH_EXPERT".equals(cleanPayload)) {
-
+                || "SPEAK_WITH_EXPERT".equals(cleanPayload)
+                || "ANNIV_REQUEST_CALLBACK".equals(cleanPayload)) {
 
             String previousStep = session.getCurrentStep();
+
+
+            // ----------------------------------------------------
+// Anniversary T-10 Step 4a Request Callback
+// Request callback pe direct Done nahi bhejna.
+// Pehle Book Appointment option dikhana hai.
+// ----------------------------------------------------
+            if ("REQUEST_CALLBACK".equals(cleanPayload)
+                    && "ANNIVERSARY_STEP_4A_SENT".equalsIgnoreCase(previousStep)) {
+
+                sendAnniversaryStoreHelpMessage(phone);
+
+                session.setCurrentStep("ANNIVERSARY_STORE_VISIT_SENT");
+                session.setLastActivity(LocalDateTime.now());
+                botSessionRepository.save(session);
+                return;
+            }
 
 
             if ("ANNIVERSARY_STEP_4A_SENT".equalsIgnoreCase(previousStep)
@@ -873,13 +1304,94 @@ private  final ProductCatalogService productCatalogService;
                 return;
             }
 
+            if ("ANNIV_REQUEST_CALLBACK".equals(cleanPayload)
+                    || (
+                    "REQUEST_CALLBACK".equals(cleanPayload)
+                            && isAnniversaryTDayFlowStep(previousStep)
+            )) {
+
+                sendAnniversaryTDayCallbackConfirmation(phone);
+
+                if ("ANNIVERSARY_T_DAY_STEP_7_SENT".equalsIgnoreCase(previousStep)
+                        || "ANNIVERSARY_T_DAY_STEP_7_STORE_SENT".equalsIgnoreCase(previousStep)) {
+
+                    session.setCurrentStep("ANNIVERSARY_T_DAY_STEP_7_CALLBACK_CONFIRMED");
+                    session.setLastActivity(LocalDateTime.now());
+                    botSessionRepository.save(session);
+
+                    scheduleAnniversaryTDayStep8(phone, customerId, firstName);
+                    return;
+                }
+
+                session.setCurrentStep("ANNIVERSARY_T_DAY_CALLBACK_CONFIRMED");
+                session.setLastActivity(LocalDateTime.now());
+                botSessionRepository.save(session);
+
+                scheduleAnniversaryTDayStep7(phone, customerId, firstName);
+                return;
+            }
+
+//            sendCallbackConfirmation(phone);
 
 
+            // ----------------------------------------------------
+// Birthday T-Day Request Callback
+// Step 6c: send confirmation first
+// Step 7: schedule after 4-6 hours
+// Testing: currently STEP_7_DELAY_SECONDS = 10 seconds
+// ----------------------------------------------------
+            if ("REQUEST_CALLBACK".equals(cleanPayload)
+                    && (
+                    "STEP_6B_SENT".equalsIgnoreCase(previousStep)
+                            || "T_DAY_STORE_LOCATOR_SENT".equalsIgnoreCase(previousStep)
+                            || "BIRTHDAY_WISH_SENT".equalsIgnoreCase(previousStep)
+            )) {
 
-            sendCallbackConfirmation(phone);
+                sendCallbackConfirmation(phone);
 
-            // Step 7 ke baad user callback click kare,
-            // then Step 8 scheduler trigger hoga.
+                session.setCurrentStep("CALLBACK_CONFIRMED");
+                session.setLastActivity(LocalDateTime.now());
+                botSessionRepository.save(session);
+
+                scheduleStep7(phone, customerId, firstName);
+                return;
+            }
+
+// ----------------------------------------------------
+// Birthday T-Day Step 7 Request Callback
+// Step 7b: send confirmation first
+// Step 8: schedule after 4 hours
+// Testing: currently STEP_8_DELAY_SECONDS = 10 seconds
+// ----------------------------------------------------
+            if ("REQUEST_CALLBACK".equals(cleanPayload)
+                    && (
+                    "STEP_7_SENT".equalsIgnoreCase(previousStep)
+                            || "STEP_7_STORE_SENT".equalsIgnoreCase(previousStep)
+            )) {
+
+                sendCallbackConfirmation(phone);
+
+                session.setCurrentStep("STEP_7_CALLBACK_CONFIRMED");
+                session.setLastActivity(LocalDateTime.now());
+                botSessionRepository.save(session);
+
+                scheduleStep8(phone, customerId, firstName);
+                return;
+            }
+
+
+            if ("BOOK_AN_APPOINTMENT".equals(cleanPayload)
+                    || "STORE_VISIT_SENT".equalsIgnoreCase(previousStep)
+                    || "CATALOGUE_FOLLOW_UP_SENT".equalsIgnoreCase(previousStep)) {
+
+                sendCallbackConfirmationWithExplore(phone);
+
+                session.setCurrentStep("CALLBACK_CONFIRMED");
+                session.setLastActivity(LocalDateTime.now());
+                botSessionRepository.save(session);
+                return;
+            }
+
             if ("STEP_7_SENT".equalsIgnoreCase(previousStep)
                     || "STEP_7_STORE_SENT".equalsIgnoreCase(previousStep)) {
 
@@ -891,8 +1403,6 @@ private  final ProductCatalogService productCatalogService;
                 return;
             }
 
-            // T-Day Step 6b ke baad callback click kare,
-            // then Step 7 scheduler trigger hoga.
             session.setCurrentStep("CALLBACK_CONFIRMED");
             session.setLastActivity(LocalDateTime.now());
             botSessionRepository.save(session);
@@ -906,6 +1416,7 @@ private  final ProductCatalogService productCatalogService;
 
             return;
         }
+
 
         // ----------------------------------------------------
         // Explore again -> Step 2
@@ -1038,6 +1549,8 @@ private  final ProductCatalogService productCatalogService;
 
 
 
+
+
     private String getFirstName(String customerName) {
         if (customerName == null || customerName.isBlank()) {
             return "there";
@@ -1124,21 +1637,46 @@ private  final ProductCatalogService productCatalogService;
     }
 
 
-    private void sendCatalogue(String phone, String firstName, String gender, String brandKey) {
+//    private void sendCatalogue(String phone, String firstName, String gender, String brandKey) {
+//        String brandName = toBrandDisplayName(brandKey);
+//        String catalogueUrl = karixApiService.getCatalogueUrl(gender, brandKey);
+//
+//        String message =
+//                "📖 *Here's the " + brandName + " collection, " + firstName + ".*\n\n"
+//                        + "Take your time browsing - we'll check back in a moment.\n\n"
+//                        + "🔗 " + catalogueUrl;
+//
+//        log.info("SENDING CATALOGUE phone={} gender={} brandKey={} url={}",
+//                phone, gender, brandKey, catalogueUrl);
+//
+//        karixApiService.sendTextMessage(phone, message);
+//    }
+
+
+
+    private void sendCatalogue(
+            String phone,
+            String firstName,
+            String gender,
+            String brandKey,
+            boolean anniversaryFlow
+    ) {
         String brandName = toBrandDisplayName(brandKey);
-        String catalogueUrl = karixApiService.getCatalogueUrl(gender, brandKey);
+
+        String catalogueUrl = anniversaryFlow
+                ? ANNIVERSARY_CATALOGUE_PDF_URL
+                : BIRTHDAY_CATALOGUE_PDF_URL;
 
         String message =
                 "📖 *Here's the " + brandName + " collection, " + firstName + ".*\n\n"
                         + "Take your time browsing - we'll check back in a moment.\n\n"
                         + "🔗 " + catalogueUrl;
 
-        log.info("SENDING CATALOGUE phone={} gender={} brandKey={} url={}",
-                phone, gender, brandKey, catalogueUrl);
+        log.info("SENDING CATALOGUE phone={} gender={} brandKey={} anniversaryFlow={} url={}",
+                phone, gender, brandKey, anniversaryFlow, catalogueUrl);
 
         karixApiService.sendTextMessage(phone, message);
     }
-
 
 
 
@@ -1211,6 +1749,8 @@ private String shortBrandCodeToBrandKey(String brandCode) {
                 )
         );
     }
+
+
     private void sendStoreHelpMessage(String phone) {
         karixApiService.sendButtonMessage(
                 phone,
@@ -1394,6 +1934,7 @@ private String shortBrandCodeToBrandKey(String brandCode) {
             }
 
             sendBirthdayFollowUp(phone, firstName);
+//            sendBirthdayExit(phone,firstName);
 
             latest.setCurrentStep("STEP_7_SENT");
             latest.setLastActivity(LocalDateTime.now());
@@ -1763,6 +2304,13 @@ private String shortBrandCodeToBrandKey(String brandCode) {
     private static final String SAMPLE_ANNIVERSARY_PDF_URL =
             "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
+
+    private static final String BIRTHDAY_CATALOGUE_PDF_URL =
+            "https://titanwatchimages123.blob.core.windows.net/watch-images/watchs_products_images/Moodshoot%20Pdf%20Birthday.pdf";
+
+    private static final String ANNIVERSARY_CATALOGUE_PDF_URL =
+            "https://titanwatchimages123.blob.core.windows.net/watch-images/watchs_products_images/Moodshoot%20Pdf%20Anniversary.pdf";
+
     // TESTING DELAYS
 // Production me:
 // STEP_4A_DELAY_SECONDS = 30 * 60 ya 10 * 60
@@ -1773,6 +2321,20 @@ private String shortBrandCodeToBrandKey(String brandCode) {
     private static final long STEP_6B_DELAY_SECONDS = 10;
     private static final long STEP_7_DELAY_SECONDS = 10;
     private static final long STEP_8_DELAY_SECONDS = 10;
+
+
+
+
+    // Anniversary T-Day testing delays.
+// Production:
+// Step 6b = 10 minutes
+// Step 7  = 4-6 hours
+// Step 8  = 4 hours
+    private static final long ANNIVERSARY_TDAY_STEP_6B_DELAY_SECONDS = 10;
+    private static final long ANNIVERSARY_TDAY_STEP_7_DELAY_SECONDS = 10;
+    private static final long ANNIVERSARY_TDAY_STEP_8_DELAY_SECONDS = 10;
+
+
 
     // Testing: 10 seconds.
 // Production: 30-40 seconds as per document.
