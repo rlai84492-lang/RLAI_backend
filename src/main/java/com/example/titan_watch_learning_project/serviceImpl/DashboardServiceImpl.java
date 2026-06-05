@@ -2,6 +2,7 @@ package com.example.titan_watch_learning_project.serviceImpl;
 
 import com.example.titan_watch_learning_project.dto.DashboardResponse;
 import com.example.titan_watch_learning_project.repository.DashboardDataRepository;
+import com.example.titan_watch_learning_project.repository.LeadRepository;
 import com.example.titan_watch_learning_project.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import java.util.*;
 public class DashboardServiceImpl implements DashboardService {
 
     private final DashboardDataRepository dashboardDataRepository;
+
+    private final LeadRepository leadRepository;
 
     @Override
     public DashboardResponse getDashboardData() {
@@ -47,10 +50,10 @@ public class DashboardServiceImpl implements DashboardService {
         return dashboardDataRepository.findSessions();
     }
 
-    @Override
-    public List<DashboardResponse.LeadDto> getLeads() {
-        return dashboardDataRepository.findLeads();
-    }
+//    @Override
+//    public List<DashboardResponse.LeadDto> getLeads() {
+//        return dashboardDataRepository.findLeads();
+//    }
 
     private DashboardResponse.MetricsDto buildMetrics(
             List<DashboardResponse.SessionDto> sessions,
@@ -268,4 +271,24 @@ public class DashboardServiceImpl implements DashboardService {
                 .womens(womens)
                 .build();
     }
+
+
+
+    public List<DashboardResponse.LeadDto> getLeads() {
+        return leadRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(lead -> DashboardResponse.LeadDto.builder()
+                        .id(lead.getId())
+                        .customerName(lead.getCustomerName())
+                        .phone(lead.getPhone())
+                        .leadType(lead.getLeadType() == null ? null : lead.getLeadType().name())
+                        .selectedCollection(lead.getSelectedCollection())
+                        .selectedStyle(lead.getSelectedStyle())
+                        .priceRange(lead.getPriceRange())
+                        .status(lead.getStatus() == null ? null : lead.getStatus().name())
+                        .createdAt(lead.getCreatedAt() == null ? null : lead.getCreatedAt().toString())
+                        .build())
+                .toList();
+    }
+
 }

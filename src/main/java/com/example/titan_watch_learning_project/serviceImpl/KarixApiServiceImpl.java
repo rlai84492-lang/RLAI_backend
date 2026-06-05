@@ -2371,4 +2371,19 @@ public class KarixApiServiceImpl {
             log.error("Failed to send carousel message phone={}", phone, e);
             return false;
         }
-    }}
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+}

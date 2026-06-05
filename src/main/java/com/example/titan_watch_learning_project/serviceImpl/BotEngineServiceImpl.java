@@ -1590,865 +1590,7 @@
 //                || "PRICE_25K_PLUS".equals(cleanPayload)) {
 //
 //            handlePriceSelected(phone, session, cleanPayload);
-//            return;
-//        }
 //
-//        if ("DOWNLOAD_CATALOGUE".equals(cleanPayload)) {
-//            karixApiService.sendImageButtonMessage(
-//                    phone,
-//                    "https://www.titan.co.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Library-Sites-TitanSharedLibrary/default/dwd83ec67e/images/homepage/All_Banners/WYS_D.jpg",
-//                    "🎂 *Titan Birthday Collection 2026*\n\nExplore our exclusive birthday watch catalogue.\n\n🔗 Visit: www.titan.co.in",
-//                    List.of(
-//                            Map.of("title", "Explore Now", "payload", "BROWSE_COLLECTION"),
-//                            Map.of("title", "Callback", "payload", "REQUEST_CALLBACK")
-//                    )
-//            );
-//            session.setCurrentStep("CATALOGUE_SENT");
-//            session.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(session);
-//            return;
-//        }
-//
-//        if ("EXPLORE_WEBSITE".equals(cleanPayload)
-//                || "BROWSE_COLLECTION".equals(cleanPayload)) {
-//
-//            karixApiService.sendTextMessage(
-//                    phone,
-//                    "Explore Titan’s full collection here: https://www.titan.co.in"
-//            );
-//
-//            session.setCurrentStep("WEBSITE_REDIRECTED");
-//            session.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(session);
-//            return;
-//        }
-//
-//        log.info("No matching payload found. Starting welcome flow for phone={}", phone);
-//        handleWelcome(phone, customerName, session);
-//    }
-//
-//
-//
-//
-//
-//
-//
-//    private String getFirstName(String customerName) {
-//        if (customerName == null || customerName.isBlank()) {
-//            return "there";
-//        }
-//
-//        return customerName.trim().split("\\s+")[0];
-//    }
-//
-//    private boolean isValidDob(String text) {
-//        if (text == null || text.isBlank()) {
-//            return false;
-//        }
-//
-//        try {
-//            LocalDate.parse(text.trim(), DOB_FORMATTER);
-//            return true;
-//        } catch (DateTimeParseException e) {
-//            return false;
-//        }
-//    }
-//
-//    private void sendBridgeMessage(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Thank you for confirming, " + firstName + "! 🎂\n"
-//                        + "Your birthday month is noted.\n\n"
-//                        + "Would you still like to explore our curated collections?",
-//                List.of(
-//                        Map.of("title", "Yes, show me", "payload", "YES_SHOW_ME"),
-//                        Map.of("title", "No, maybe later", "payload", "NO_MAYBE_LATER")
-//                )
-//        );
-//    }
-//
-//
-//    private void sendChatbotOpener(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Great to hear from you, *" + firstName + "*! 🎂\n"
-//                        + "We have got something special waiting for you from the *Titan World* collection. ✨\n"
-//                        + "👉 *What would you like to do?*",
-//                List.of(
-//                        Map.of("title", "🔍 Find my watch", "payload", "FIND_MY_PERFECT_WATCH"),
-//                        Map.of("title", "🎁 Birthday offers", "payload", "SEE_BIRTHDAY_OFFERS")
-//                )
-//        );
-//    }
-//
-//
-//    private void sendGenderSelection(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Let's find the perfect watch for you.\n"
-//                        + "Browsing for:",
-//                List.of(
-//                        Map.of("title", "Men's collection", "payload", "MENS_COLLECTION"),
-//                        Map.of("title", "Women's collection", "payload", "WOMENS_COLLECTION")
-//                )
-//        );
-//    }
-//
-////    private boolean sendBrandCarousel(String phone, String firstName, String gender) {
-////    if ("MEN".equalsIgnoreCase(gender)) {
-////        return karixApiService.sendBrandCarouselMessage(phone, firstName, "MEN", MEN_BRANDS);
-////    }
-////
-////    return karixApiService.sendBrandCarouselMessage(phone, firstName, "WOMEN", WOMEN_BRANDS);
-////}
-//
-//
-//    private boolean sendBrandCarousel(String phone, String firstName, String gender) {
-//
-//        List<BrandCarouselCard> cards =
-//                brandCarouselCardRepository.findByGenderIgnoreCaseAndActiveTrueOrderByDisplayOrderAscIdAsc(gender);
-//
-//        log.info("Brand carousel cards from DB gender={} count={}", gender, cards.size());
-//
-//        return karixApiService.sendBrandCarouselMessageFromDbCards(
-//                phone,
-//                firstName,
-//                gender,
-//                cards
-//        );
-//    }
-//
-//
-////    private void sendCatalogue(String phone, String firstName, String gender, String brandKey) {
-////        String brandName = toBrandDisplayName(brandKey);
-////        String catalogueUrl = karixApiService.getCatalogueUrl(gender, brandKey);
-////
-////        String message =
-////                "📖 *Here's the " + brandName + " collection, " + firstName + ".*\n\n"
-////                        + "Take your time browsing - we'll check back in a moment.\n\n"
-////                        + "🔗 " + catalogueUrl;
-////
-////        log.info("SENDING CATALOGUE phone={} gender={} brandKey={} url={}",
-////                phone, gender, brandKey, catalogueUrl);
-////
-////        karixApiService.sendTextMessage(phone, message);
-////    }
-//
-//
-//
-//    private void sendCatalogue(
-//            String phone,
-//            String firstName,
-//            String gender,
-//            String brandKey,
-//            boolean anniversaryFlow
-//    ) {
-//        String brandName = toBrandDisplayName(brandKey);
-//
-//        String catalogueUrl = anniversaryFlow
-//                ? ANNIVERSARY_CATALOGUE_PDF_URL
-//                : BIRTHDAY_CATALOGUE_PDF_URL;
-//
-//        String message =
-//                "📖 *Here's the " + brandName + " collection, " + firstName + ".*\n\n"
-//                        + "Take your time browsing - we'll check back in a moment.\n\n"
-//                        + "🔗 " + catalogueUrl;
-//
-//        log.info("SENDING CATALOGUE phone={} gender={} brandKey={} anniversaryFlow={} url={}",
-//                phone, gender, brandKey, anniversaryFlow, catalogueUrl);
-//
-//        karixApiService.sendTextMessage(phone, message);
-//    }
-//
-//
-//
-//
-//    private String toBrandDisplayName(String brandKey) {
-//        if (brandKey == null || brandKey.isBlank()) {
-//            return "Titan";
-//        }
-//
-//        return switch (brandKey) {
-//            case "TITAN_EDGE" -> "Titan Edge";
-//            case "TITAN_STELLAR" -> "Titan Stellar";
-//            case "TITAN_AUTOMATIC" -> "Titan Automatic";
-//            case "XYLYS" -> "Xylys";
-//            case "TITAN_DIVERS" -> "Titan Divers";
-//            case "TITAN_SMART" -> "Titan Smart";
-//            case "TITAN_RAGA" -> "Titan Raga";
-//            case "FASTRACK" -> "Fastrack";
-//            case "TITAN" -> "Titan";
-//            default -> brandKey.replace("_", " ");
-//        };
-//    }
-//
-//
-//private String extractShortBrandCode(String payload) {
-//    if (payload == null || payload.isBlank()) {
-//        return "TTN";
-//    }
-//
-//    String[] parts = payload.split("_");
-//
-//    // Expected:
-//    // EX_M_EDG_0
-//    // CB_W_RAG_1
-//    if (parts.length >= 3) {
-//        return parts[2];
-//    }
-//
-//    return "TTN";
-//}
-//
-//private String shortBrandCodeToBrandKey(String brandCode) {
-//    if (brandCode == null || brandCode.isBlank()) {
-//        return "TITAN";
-//    }
-//
-//    return switch (brandCode) {
-//        case "EDG" -> "TITAN_EDGE";
-//        case "STL" -> "TITAN_STELLAR";
-//        case "ATM" -> "TITAN_AUTOMATIC";
-//        case "XYL" -> "XYLYS";
-//        case "DIV" -> "TITAN_DIVERS";
-//        case "SMT" -> "TITAN_SMART";
-//        case "RAG" -> "TITAN_RAGA";
-//        case "FST" -> "FASTRACK";
-//        case "TTN" -> "TITAN";
-//        default -> "TITAN";
-//    };
-//}
-//
-//
-//    private void sendCatalogueFollowUp(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Did anything catch your eye, " + firstName + "? 👀\n"
-//                        + "We can help you get it - visit a nearby Titan World store or have one of our experts call you.",
-//                List.of(
-//                        Map.of("title", "Visit nearest store", "payload", "VISIT_NEAREST_STORE"),
-//                        Map.of("title", "Request a callback", "payload", "REQUEST_CALLBACK")
-//                )
-//        );
-//    }
-//
-//
-//    private void sendStoreHelpMessage(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Hope you found your nearest store. If you need help, our expert can call you and book an appointment.",
-//                List.of(
-//                        Map.of("title", "Book appointment", "payload", "BOOK_AN_APPOINTMENT")
-//                )
-//        );
-//    }
-//
-//    private void sendStoreHelpBirthdayMessage(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "📍 *Store Visit Assistance*\n\n"
-//                        + "Hope you found your nearest store.\n\n"
-//                        + "If you need help, our expert can call you and book an appointment.",
-//                List.of(
-//                        Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK")
-//                )
-//        );
-//    }
-//    private void sendCallbackConfirmation(String phone) {
-//        karixApiService.sendTextMessage(
-//                phone,
-//                "✅ *Done. Our team will be in touch.*\n\n"
-//                        + "One of our *Titan experts* will call you to help you with the one that caught your eye.\n\n"
-//                        + "In the meantime, feel free to see the curated collection."
-//        );
-//    }
-//    private void sendBirthdayOfferPath(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Here's your birthday offer, " + firstName + " 🎁\n\n"
-//                        + "Up to 10% off on selected Titan brands - yours to use for 21 days before and after your birthday.\n\n"
-//                        + "Your nearest Titan store is ready for you.",
-//                List.of(
-//                        Map.of("title", "Book store visit", "payload", "VISIT_NEAREST_STORE"),
-//                        Map.of("title", "Request callback", "payload", "REQUEST_CALLBACK")
-//                )
-//        );
-//    }
-//
-//    private void sendBirthdayWish(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "🎉 *HAPPY BIRTHDAY, " + firstName + "!*\n\n"
-//                        + "May your special day be filled with exceptional moments.\n\n"
-//                        + "Enjoy up to *10% discount* on your purchase at the nearest *Titan World* store for the next *21 days*.\n\n"
-//                        + "Once again, a very happy birthday from all of us at *Titan World*!",
-//                List.of(
-//                        Map.of("title", "Locate Store", "payload", "LOCATE_STORE")
-//                )
-//        );
-//    }
-//    private void sendBirthdayFollowUp(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "⏳ *Your birthday offer is still live, " + firstName + ".*\n\n"
-//                        + "A few hours left today — and we'd hate for you to miss it.\n\n"
-//                        + "Visit your nearest store or book an appointment with an expert.",
-//                List.of(
-//                        Map.of("title", "Visit Store Today", "payload", "VISIT_STORE_TODAY"),
-//                        Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK")
-//                )
-//        );
-//    }
-//
-//    private void sendBirthdayExit(String phone, String firstName) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Hope you had a wonderful birthday, " + firstName + ". 🎂\n\n"
-//                        + "The Titan World family is always here when you're ready.\n\n"
-//                        + "Visit us anytime - no birthday needed.",
-//                List.of(
-//                        Map.of("title", "Visit us anytime", "payload", "VISIT_US_ANYTIME")
-//                )
-//        );
-//    }
-//
-//    private boolean isBirthdayDayFlow(BotSession session) {
-//        if (session == null || session.getCurrentStep() == null) {
-//            return false;
-//        }
-//
-//        String step = session.getCurrentStep();
-//
-//        return step.startsWith("T_DAY")
-//                || "BIRTHDAY_WISH_SENT".equalsIgnoreCase(step)
-//                || "STEP_6B_SENT".equalsIgnoreCase(step);
-//    }
-//
-//
-//
-//    private String mapStylePayloadToDbStyle(String stylePayload) {
-//        if ("STYLE_MINIMAL_CHIC".equalsIgnoreCase(stylePayload)) {
-//            return "Minimal & Chic";
-//        }
-//
-//        if ("STYLE_BOLD_EDGY".equalsIgnoreCase(stylePayload)) {
-//            return "Bold & Edgy";
-//        }
-//
-//        if ("STYLE_LUXE_CLASSY".equalsIgnoreCase(stylePayload)) {
-//            return "Luxe & Classy";
-//        }
-//
-//        if ("STYLE_SPORTY_ADVENTUROUS".equalsIgnoreCase(stylePayload)) {
-//            return "Sporty & Adventurous";
-//        }
-//
-//        return "";
-//    }
-//
-//    private String normalizePayload(String value) {
-//        if (value == null || value.isBlank()) {
-//            return "";
-//        }
-//
-//        return value.trim()
-//                .toUpperCase()
-//                .replace(" ", "_")
-//                .replace("-", "_")
-//                .replace("’", "")
-//                .replace("'", "");
-//    }
-//
-//
-//
-//    private void scheduleStep4a(String phone, Long customerId, String firstName) {
-//        taskScheduler.schedule(() -> {
-//            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
-//
-//            if (latest == null) {
-//                return;
-//            }
-//
-//            if (!"CATALOGUE_SENT".equalsIgnoreCase(latest.getCurrentStep())) {
-//                return;
-//            }
-//
-//            sendCatalogueFollowUp(phone, firstName);
-//
-//            latest.setCurrentStep("CATALOGUE_FOLLOW_UP_SENT");
-//            latest.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(latest);
-//
-//        }, Instant.now().plusSeconds(STEP_4A_DELAY_SECONDS));
-//    }
-//
-//    private void scheduleStep6b(String phone, Long customerId, String firstName) {
-//        taskScheduler.schedule(() -> {
-//            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
-//
-//            if (latest == null) {
-//                return;
-//            }
-//
-//            if (!"T_DAY_STORE_LOCATOR_SENT".equalsIgnoreCase(latest.getCurrentStep())) {
-//                return;
-//            }
-//
-//            sendStoreHelpBirthdayMessage(phone);
-//
-//            latest.setCurrentStep("STEP_6B_SENT");
-//            latest.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(latest);
-//
-//        }, Instant.now().plusSeconds(STEP_6B_DELAY_SECONDS));
-//    }
-//
-//    private void scheduleStep7(String phone, Long customerId, String firstName) {
-//        taskScheduler.schedule(() -> {
-//            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
-//
-//            if (latest == null) {
-//                return;
-//            }
-//
-//            if (!"CALLBACK_CONFIRMED".equalsIgnoreCase(latest.getCurrentStep())) {
-//                return;
-//            }
-//
-//            sendBirthdayFollowUp(phone, firstName);
-////            sendBirthdayExit(phone,firstName);
-//
-//            latest.setCurrentStep("STEP_7_SENT");
-//            latest.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(latest);
-//
-//        }, Instant.now().plusSeconds(STEP_7_DELAY_SECONDS));
-//    }
-//
-//    private void scheduleStep8(String phone, Long customerId, String firstName) {
-//        taskScheduler.schedule(() -> {
-//            BotSession latest = botSessionRepository.findTopByPhoneOrderByLastActivityDesc(phone).orElse(null);
-//
-//            if (latest == null) {
-//                return;
-//            }
-//
-//            if (!"STEP_7_CALLBACK_CONFIRMED".equalsIgnoreCase(latest.getCurrentStep())) {
-//                return;
-//            }
-//
-//            sendBirthdayExit(phone, firstName);
-//
-//            latest.setCurrentStep("FLOW_ENDED");
-//            latest.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(latest);
-//
-//        }, Instant.now().plusSeconds(STEP_8_DELAY_SECONDS));
-//    }
-//    private String getStyleFromSession(BotSession session) {
-//        String step = session.getCurrentStep();
-//
-//        if (step == null) {
-//            return "";
-//        }
-//
-//        if (step.contains("STYLE_MINIMAL_CHIC")) {
-//            return "STYLE_MINIMAL_CHIC";
-//        }
-//
-//        if (step.contains("STYLE_BOLD_EDGY")) {
-//            return "STYLE_BOLD_EDGY";
-//        }
-//
-//        if (step.contains("STYLE_LUXE_CLASSY")) {
-//            return "STYLE_LUXE_CLASSY";
-//        }
-//
-//        if (step.contains("STYLE_SPORTY_ADVENTUROUS")) {
-//            return "STYLE_SPORTY_ADVENTUROUS";
-//        }
-//
-//        return "";
-//    }
-//
-//
-//
-//
-//    private void sendProductRecommendations(
-//            String phone,
-//            List<WatchProduct> products,
-//            String collectionType,
-//            String priceBucket
-//    ) {
-//        if (products == null || products.isEmpty()) {
-//            karixApiService.sendTextMessage(
-//                    phone,
-//                    "Sorry, we could not find watches in this price range right now."
-//            );
-//
-//            karixApiService.sendButtonMessage(
-//                    phone,
-//                    "Would you like to continue?",
-//                    List.of(
-//                            Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
-//                            Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
-//                    )
-//            );
-//            return;
-//        }
-//
-//        boolean carouselSent = karixApiService.sendCarouselMessage(phone, products);
-//
-//        if (carouselSent) {
-//            log.info("Carousel sent successfully to phone={} productCount={}", phone, products.size());
-//            return;
-//        }
-//
-//        log.error("Carousel failed for phone={}. Not sending old individual cards because fallback is disabled.", phone);
-//
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Sorry, product carousel could not be loaded right now.\n\nWould you like our expert to help you?",
-//                List.of(
-//                        Map.of("title", "Callback", "payload", "REQUEST_CALLBACK"),
-//                        Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
-//                )
-//        );
-//    }
-//
-//
-//
-//    private String getCollectionFromSession(BotSession session) {
-//        String step = session.getCurrentStep();
-//
-//        if (step == null) {
-//            return "MALE";
-//        }
-//
-//
-//
-//        if (step.contains("FEMALE") || step.contains("WOMEN")) {
-//            return "FEMALE";
-//        }
-//
-//        if (step.contains("COUPLES")) {
-//            return "COUPLES";
-//        }
-//
-//        return "MALE";
-//    }
-//
-//
-//
-//
-//
-//    private String mapPricePayloadToBucket(String pricePayload) {
-//        if (pricePayload == null || pricePayload.isBlank()) {
-//            return "";
-//        }
-//
-//        if ("PRICE_BELOW_10K".equalsIgnoreCase(pricePayload)) {
-//            return "PRICE_BELOW_10K";
-//        }
-//
-//        return pricePayload.trim().toUpperCase();
-//    }
-//
-//
-//
-//
-//
-//
-//    private void handlePriceSelected(String phone, BotSession session, String pricePayload) {
-//        String collectionType = getCollectionFromSession(session);
-//        String priceBucket = mapPricePayloadToBucket(pricePayload);
-//
-//        if (collectionType == null || collectionType.isBlank()) {
-//            collectionType = "MALE";
-//        }
-//
-//        log.info("Fetching products collectionType={} pricePayload={} priceBucket={}",
-//                collectionType, pricePayload, priceBucket);
-//
-//        List<WatchProduct> products;
-//
-//        if ("PRICE_BELOW_10K".equalsIgnoreCase(pricePayload)
-//                || "PRICE_2K_5K".equalsIgnoreCase(pricePayload)
-//                || "PRICE_5K_10K".equalsIgnoreCase(pricePayload)) {
-//
-//            products = productCatalogService.getProductsByCollectionAndPriceBuckets(
-//                    collectionType,
-//                    List.of("PRICE_2K_5K", "PRICE_5K_10K")
-//            );
-//
-//            priceBucket = "PRICE_BELOW_10K";
-//        } else {
-//            products = productCatalogService.getProductsByCollectionAndPrice(
-//                    collectionType,
-//                    priceBucket
-//            );
-//        }
-//
-//        if (products == null || products.isEmpty()) {
-//            karixApiService.sendTextMessage(
-//                    phone,
-//                    "Sorry, we could not find watches in this price range right now. Our team can help you personally."
-//            );
-//
-//            karixApiService.sendButtonMessage(
-//                    phone,
-//                    "Would you like a callback?",
-//                    List.of(
-//                            Map.of("title", "Request Callback", "payload", "REQUEST_CALLBACK"),
-//                            Map.of("title", "Browse Again", "payload", "BROWSE_AGAIN")
-//                    )
-//            );
-//
-//            session.setCurrentStep("NO_PRODUCTS_FOUND");
-//            session.setLastActivity(LocalDateTime.now());
-//            botSessionRepository.save(session);
-//            return;
-//        }
-//
-//        sendProductRecommendations(phone, products, collectionType, priceBucket);
-//
-//        session.setCurrentStep("PRODUCTS_SENT_" + collectionType + "_" + priceBucket);
-//        session.setLastActivity(LocalDateTime.now());
-//        botSessionRepository.save(session);
-//    }
-//
-//
-//
-//
-//    private void sendPriceSelection(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "💎 *Let's also find the right fit for your budget.*\n\n"
-//                        + "Pick a price range:",
-//                List.of(
-//                        Map.of("title", "Below ₹10,000", "payload", "PRICE_BELOW_10K"),
-//                        Map.of("title", "₹10,000 - ₹25,000", "payload", "PRICE_10K_25K"),
-//                        Map.of("title", "Above ₹25,000", "payload", "PRICE_25K_PLUS")
-//                )
-//        );
-//    }
-//
-//    private void handleStyleSelected(
-//            String phone,
-//            BotSession session,
-//            String stylePayload,
-//            String styleName
-//    ) {
-//        String collectionType = getCollectionFromSession(session);
-//        if (collectionType == null || collectionType.isBlank()) collectionType = "MALE";
-//
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "🌟 *" + styleName + " — A perfect choice.*\n\n"
-//                        + "Your taste speaks volumes.\n\n"
-//                        + "Now let's find the watch that matches your budget — because luxury should feel right.",
-//                List.of(
-//                        Map.of("title", "💰 See by Price", "payload", "SEE_BY_PRICE"),
-//                        Map.of("title", "📞 Request Callback", "payload", "REQUEST_CALLBACK"),
-//                        Map.of("title", "📖 Catalogue", "payload", "DOWNLOAD_CATALOGUE")
-//                )
-//        );
-//
-//        session.setCurrentStep("STYLE_SELECTED_" + collectionType + "_" + stylePayload);
-//        session.setLastActivity(LocalDateTime.now());
-//        botSessionRepository.save(session);
-//    }
-//
-//
-//    private void sendCollectionSelection(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "⌚ *Let's find the one for you.*\n\n"
-//                        + "Browsing for:",
-//                List.of(
-//                        Map.of("title", "Men's Collection", "payload", "MENS_COLLECTION"),
-//                        Map.of("title", "Women's Collection", "payload", "WOMENS_COLLECTION")
-//                )
-//        );
-//    }
-//    private void sendBirthdayOffers(String phone) {
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "🎁 *Here's what we have for your birthday —*\n\n"
-//                        + "🏷️ Special birthday discount on select collections\n"
-//                        + "👑 Exclusive early access to new arrivals\n"
-//                        + "🥂 In-store birthday celebration\n\n"
-//                        + "Walk in today — your nearest Titan store is ready for you.",
-//                List.of(
-//                        Map.of("title", "Book Store", "payload", "BOOK_STORE_VISIT"),
-//                        Map.of("title", "Callback", "payload", "REQUEST_CALLBACK")
-//                )
-//        );
-//    }
-//
-//    private void sendStyleDemoBySession(String phone, BotSession session, String style) {
-//        String currentStep = session.getCurrentStep() == null ? "" : session.getCurrentStep();
-//
-//        String gender;
-//
-//        if ("STYLE_SELECTION_MEN".equalsIgnoreCase(currentStep)) {
-//            gender = "MEN";
-//        } else if ("STYLE_SELECTION_WOMEN".equalsIgnoreCase(currentStep)) {
-//            gender = "WOMEN";
-//        } else {
-//            // fallback demo ke liye
-//            gender = "MEN";
-//        }
-//
-//        karixApiService.sendDemoStyleProductMessage(phone, gender, style);
-//
-//        session.setCurrentStep("PRODUCT_DEMO_" + gender + "_" + style.toUpperCase().replace(" ", "_").replace("&", "AND"));
-//        session.setLastActivity(LocalDateTime.now());
-//        botSessionRepository.save(session);
-//    }
-//
-//    @Override
-//    public void sendWelcomeMessage(String phone, String customerName, BotSession session) {
-//
-//    }
-//
-//    @Override
-//    public void sendBirthdayDayMessage(String phone, String customerName, BotSession session) {
-//
-//    }
-//
-//
-//
-//
-//
-//    private void handleWelcome(String phone, String customerName, BotSession session) {
-//        String name = customerName == null || customerName.isBlank()
-//                ? "there"
-//                : customerName;
-//
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Happy to hear from you, *" + name + "!* 🎂\n\n"
-//                        + "Your birthday month is here — and we've put together something from the Titan collection just for you.\n\n"
-//                        + "What would you like to do?",
-//                List.of(
-//                        Map.of("title", "Find my watch", "payload", "FIND_BIRTHDAY_WATCH"),
-//                        Map.of("title", "Birthday offers", "payload", "BIRTHDAY_OFFERS")
-//                )
-//        );
-//
-//        session.setCurrentStep("WELCOME_SENT");
-//        session.setLastActivity(LocalDateTime.now());
-//        botSessionRepository.save(session);
-//    }
-//
-//    private void saveIncomingMessage(String phone, String text, String payload, Long customerId) {
-//        Message message = new Message();
-//        message.setPhone(phone);
-//        message.setCustomerId(customerId);
-//        message.setDirection(Message.Direction.INBOUND);
-//
-//        message.setMessageContent(text);
-//        message.setButtonPayload(payload);
-//        if (payload != null && !payload.isBlank() && !payload.equalsIgnoreCase(text)) {
-//            message.setMessageType(Message.MessageType.BUTTON);
-//        } else {
-//            message.setMessageType(Message.MessageType.TEXT);
-//        }
-//        message.setStatus(Message.Status.RECEIVED);
-//
-//        message.setStepName("INCOMING");
-//        message.setSentAt(LocalDateTime.now());
-//
-//        messageRepository.save(message);
-//    }
-//
-//    private BotSession getOrCreateSession(String phone, Long customerId) {
-//        return botSessionRepository
-//                .findTopByPhoneAndIsActiveTrueOrderByLastActivityDesc(phone)
-//                .orElseGet(() -> {
-//                    BotSession session = new BotSession();
-//                    session.setPhone(phone);
-//                    session.setCustomerId(customerId);
-//                    session.setCurrentStep("WELCOME");
-//                    session.setIsActive(true);
-//                    session.setSessionStart(LocalDateTime.now());
-//                    session.setLastActivity(LocalDateTime.now());
-//                    return botSessionRepository.save(session);
-//                });
-//    }
-//
-//
-//    private static final String STORE_LOCATOR_URL = "https://www.titan.co.in/store-locator";
-//
-//
-//
-//    private static final String SAMPLE_ANNIVERSARY_PDF_URL =
-//            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-//
-//
-//    private static final String BIRTHDAY_CATALOGUE_PDF_URL =
-//            "https://titanwatchimages123.blob.core.windows.net/watch-images/watchs_products_images/Moodshoot%20Pdf%20Birthday.pdf";
-//
-//    private static final String ANNIVERSARY_CATALOGUE_PDF_URL =
-//            "https://titanwatchimages123.blob.core.windows.net/watch-images/watchs_products_images/Moodshoot%20Pdf%20Anniversary.pdf";
-//
-//    // TESTING DELAYS
-//// Production me:
-//// STEP_4A_DELAY_SECONDS = 30 * 60 ya 10 * 60
-//// STEP_6B_DELAY_SECONDS = 10 * 60
-//// STEP_7_DELAY_SECONDS = 4 * 60 * 60 ya 6 * 60 * 60
-//// STEP_8_DELAY_SECONDS = 4 * 60 * 60
-//    private static final long STEP_4A_DELAY_SECONDS = 10;
-//    private static final long STEP_6B_DELAY_SECONDS = 10;
-//    private static final long STEP_7_DELAY_SECONDS = 10;
-//    private static final long STEP_8_DELAY_SECONDS = 10;
-//
-//
-//
-//
-//    // Anniversary T-Day testing delays.
-//// Production:
-//// Step 6b = 10 minutes
-//// Step 7  = 4-6 hours
-//// Step 8  = 4 hours
-//    private static final long ANNIVERSARY_TDAY_STEP_6B_DELAY_SECONDS = 10;
-//    private static final long ANNIVERSARY_TDAY_STEP_7_DELAY_SECONDS = 10;
-//    private static final long ANNIVERSARY_TDAY_STEP_8_DELAY_SECONDS = 10;
-//
-//
-//
-//    // Testing: 10 seconds.
-//// Production: 30-40 seconds as per document.
-//    private static final long ANNIVERSARY_STEP_4A_DELAY_SECONDS = 10;
-//
-//    private static final DateTimeFormatter DOB_FORMATTER =
-//            DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH);
-//
-//    private static final List<Map<String, String>> MEN_BRANDS = List.of(
-//            Map.of("key", "TITAN_EDGE", "name", "Titan Edge"),
-//            Map.of("key", "TITAN_STELLAR", "name", "Titan Stellar"),
-//            Map.of("key", "TITAN_AUTOMATIC", "name", "Titan Automatic"),
-//            Map.of("key", "XYLYS", "name", "Xylys"),
-//            Map.of("key", "TITAN_DIVERS", "name", "Titan Divers"),
-//            Map.of("key", "TITAN", "name", "Titan"),
-//            Map.of("key", "TITAN_SMART", "name", "Titan Smart")
-//    );
-//
-//    private static final List<Map<String, String>> WOMEN_BRANDS = List.of(
-//            Map.of("key", "TITAN_EDGE", "name", "Titan Edge"),
-//            Map.of("key", "TITAN_RAGA", "name", "Titan Raga"),
-//            Map.of("key", "TITAN_SMART", "name", "Titan Smart"),
-//            Map.of("key", "XYLYS", "name", "Xylys"),
-//            Map.of("key", "FASTRACK", "name", "Fastrack"),
-//            Map.of("key", "TITAN", "name", "Titan")
-//    );
-//
-//}
-//
-//
-////WEBHOOK_FORWARD_URL = https://quack-freestyle-slashed.ngrok-free.dev/webhook
-
 
 
 
@@ -2456,11 +1598,9 @@ package com.example.titan_watch_learning_project.serviceImpl;
 
 import com.example.titan_watch_learning_project.entity.BotSession;
 import com.example.titan_watch_learning_project.entity.BrandCarouselCard;
+import com.example.titan_watch_learning_project.entity.Lead;
 import com.example.titan_watch_learning_project.entity.Message;
-import com.example.titan_watch_learning_project.repository.BotSessionRepository;
-import com.example.titan_watch_learning_project.repository.BrandCarouselCardRepository;
-import com.example.titan_watch_learning_project.repository.CustomerRepository;
-import com.example.titan_watch_learning_project.repository.MessageRepository;
+import com.example.titan_watch_learning_project.repository.*;
 import com.example.titan_watch_learning_project.service.BotEngineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -2487,6 +1627,8 @@ public class BotEngineServiceImpl implements BotEngineService {
     private final CustomerRepository customerRepository;
     private final TaskScheduler taskScheduler;
     private final BrandCarouselCardRepository brandCarouselCardRepository;
+
+    private final LeadRepository leadRepository;
 
     // ---------------------------------------------------------------------
     // URLs / Delays
@@ -2600,6 +1742,67 @@ public class BotEngineServiceImpl implements BotEngineService {
     // ---------------------------------------------------------------------
     // Main entry point
     // ---------------------------------------------------------------------
+
+
+    private void saveLead(
+            String phone,
+            Long customerId,
+            String customerName,
+            BotSession session,
+            Lead.LeadType leadType,
+            String notes
+    ) {
+        try {
+            if (phone == null || phone.isBlank()) {
+                log.warn("Lead not saved because phone is blank. leadType={} notes={}", leadType, notes);
+                return;
+            }
+
+            String selectedCollection = null;
+            String selectedStyle = null;
+            String priceRange = null;
+
+            if (session != null) {
+                selectedCollection = session.getSelectedCollection() == null
+                        ? null
+                        : session.getSelectedCollection().name();
+
+                selectedStyle = session.getSelectedBrand();
+                priceRange = session.getSelectedPriceRange();
+            }
+
+            Lead lead = Lead.builder()
+                    .customerId(customerId)
+                    .phone(phone)
+                    .customerName(customerName)
+                    .leadType(leadType)
+                    .status(Lead.LeadStatus.NEW)
+                    .selectedCollection(selectedCollection)
+                    .selectedStyle(selectedStyle)
+                    .priceRange(priceRange)
+                    .notes(notes)
+                    .build();
+
+            if (customerId != null) {
+                customerRepository.findById(customerId).ifPresent(customer -> {
+                    lead.setStoreCode(customer.getStoreCode());
+
+                    if (lead.getCustomerName() == null || lead.getCustomerName().isBlank()) {
+                        lead.setCustomerName(customer.getName());
+                    }
+                });
+            }
+
+            leadRepository.save(lead);
+
+            log.info("Lead saved phone={} type={} collection={} style={} notes={}",
+                    phone, leadType, selectedCollection, selectedStyle, notes);
+
+        } catch (Exception e) {
+            log.error("Lead save failed but bot flow will continue. phone={} type={} notes={}",
+                    phone, leadType, notes, e);
+        }
+    }
 
 
     private boolean handleBirthdayTDayExitOrCompletedState(
@@ -3073,7 +2276,7 @@ public class BotEngineServiceImpl implements BotEngineService {
             }
 
             if (isCallbackCarouselPayload(cleanPayload)) {
-                return handleBirthdayT10CarouselCallback(phone, session, cleanPayload);
+                return handleBirthdayT10CarouselCallback(phone, session, firstName,cleanPayload);
             }
         }
 
@@ -3105,13 +2308,19 @@ public class BotEngineServiceImpl implements BotEngineService {
 
 
                         if (isBirthdayT10CatalogueOrOfferStep(currentStep)) {
-
-            // Offer path: Book store visit
-            // Catalogue follow-up path: Visit nearest store
                             if (isPayload(cleanPayload,
                                     "BIRTHDAY_T10_OFFER_BOOK_STORE",
                                     "BIRTHDAY_T10_CATALOGUE_VISIT_STORE")
                                     || isStoreVisitPayload(cleanPayload)) {
+
+                                saveLead(
+                                        phone,
+                                        session.getCustomerId(),
+                                        firstName,
+                                        session,
+                                        Lead.LeadType.STORE_VISIT,
+                                        "Birthday T-10 store visit requested"
+                                );
 
                                 sendBirthdayT10StoreVisit(phone);
                                 saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
@@ -3125,6 +2334,16 @@ public class BotEngineServiceImpl implements BotEngineService {
                     "BIRTHDAY_T10_OFFER_CALLBACK",
                     "BIRTHDAY_T10_CATALOGUE_CALLBACK")
                     || isCallbackPayload(cleanPayload)) {
+
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Birthday T-10 callback requested"
+                );
 
                 sendBirthdayT10CallbackConfirmation(phone);
                 saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
@@ -3391,7 +2610,7 @@ public class BotEngineServiceImpl implements BotEngineService {
         }
 
         if (isCallbackCarouselPayload(cleanPayload)) {
-            return handleBirthdayT10CarouselCallback(phone, session, cleanPayload);
+            return handleBirthdayT10CarouselCallback(phone, session,firstName,cleanPayload);
         }
 
         // Store / callback buttons
@@ -3503,6 +2722,16 @@ public class BotEngineServiceImpl implements BotEngineService {
                 "LOCATE_NEAREST_STORE",
                 "LOCATE_NEAREST_STORE_FROM_WISH")) {
 
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.STORE_VISIT,
+                    "Birthday T-Day locate nearest store"
+            );
+
+
             sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
@@ -3524,6 +2753,16 @@ public class BotEngineServiceImpl implements BotEngineService {
                 && isStep(currentStep,
                 STEP_BIRTHDAY_TDAY_STORE_HELP_SENT,
                 "STEP_6B_SENT")) {
+
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Birthday T-Day callback after store visit"
+            );
+
 
             sendBirthdayTDayCallbackConfirmation(phone);
             saveStep(session, STEP_BIRTHDAY_TDAY_CALLBACK_CONFIRMED);
@@ -3662,7 +2901,7 @@ public class BotEngineServiceImpl implements BotEngineService {
         }
 
         if (isCallbackCarouselPayload(cleanPayload)) {
-            return handleAnniversaryT10CarouselCallback(phone, session, cleanPayload);
+            return handleAnniversaryT10CarouselCallback(phone, session, firstName ,cleanPayload);
         }
 
         if (isPayload(cleanPayload,
@@ -3681,6 +2920,15 @@ public class BotEngineServiceImpl implements BotEngineService {
                 "ANNIVERSARY_T10_OFFER_CALLBACK",
                 "ANNIV_T10_CALLBACK",
                 "REQUEST_CALLBACK")) {
+
+            saveLead(
+                    phone,
+                    session.getCustomerId(),
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Anniversary T-10 callback requested"
+            );
 
             sendAnniversaryT10CallbackConfirmation(phone);
             saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
@@ -3760,6 +3008,15 @@ public class BotEngineServiceImpl implements BotEngineService {
                 "ANNIV_LOCATE_NEAREST_STORE",
                 "ANNIVERSARY_LOCATE_STORE")) {
 
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.STORE_VISIT,
+                    "Anniversary T-Day locate nearest store"
+            );
+
             sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
@@ -3768,6 +3025,16 @@ public class BotEngineServiceImpl implements BotEngineService {
                 "ANNIVERSARY_TDAY_CALLBACK_AFTER_STORE_VISIT",
                 "ANNIV_REQUEST_CALLBACK")
                 && isStep(currentStep, STEP_ANNIVERSARY_TDAY_STORE_HELP_SENT)) {
+
+
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Anniversary T-Day callback after store visit"
+            );
 
             sendAnniversaryTDayCallbackConfirmation(phone);
             saveStep(session, STEP_ANNIVERSARY_TDAY_CALLBACK_CONFIRMED);
@@ -3792,6 +3059,16 @@ public class BotEngineServiceImpl implements BotEngineService {
                 "ANNIV_REQUEST_CALLBACK_AFTER_REMINDER_STORE")
                 && (isAnniversaryTDayFinalReminderStep(currentStep)
                 || isAnniversaryTDayFinalReminderStoreStep(currentStep))) {
+
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Anniversary T-Day callback from reminder"
+            );
+
 
             sendAnniversaryTDayCallbackConfirmation(phone);
             saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
@@ -3902,6 +3179,7 @@ public class BotEngineServiceImpl implements BotEngineService {
     private boolean handleBirthdayT10CarouselCallback(
             String phone,
             BotSession session,
+            String firstName,
             String cleanPayload
     ) {
         String gender = cleanPayload.startsWith("CB_M_") ? "MEN" : "WOMEN";
@@ -3910,6 +3188,17 @@ public class BotEngineServiceImpl implements BotEngineService {
 
         session.setSelectedCollection("MEN".equalsIgnoreCase(gender) ? BotSession.Collection.MENS : BotSession.Collection.WOMENS);
         session.setSelectedBrand(brandKey);
+
+
+        saveLead(
+                phone,
+                session.getCustomerId(),
+                firstName,
+                session,
+                Lead.LeadType.CALLBACK,
+                "Birthday T-10 carousel request callback | gender=" + gender + " | brand=" + brandKey
+        );
+
         sendBirthdayT10CallbackConfirmationWithExplore(phone, gender, brandCode);
         saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
         return true;
@@ -4206,7 +3495,7 @@ public class BotEngineServiceImpl implements BotEngineService {
             if (isAnniversaryT10CallbackCarouselPayload(cleanPayload)
                     || isCallbackCarouselPayload(cleanPayload)) {
 
-                return handleAnniversaryT10CarouselCallback(phone, session, cleanPayload);
+                return handleAnniversaryT10CarouselCallback(phone, session,firstName, cleanPayload);
             }
         }
 
@@ -4219,6 +3508,17 @@ public class BotEngineServiceImpl implements BotEngineService {
                     "ANNIVERSARY_T10_OFFER_BOOK_STORE",
                     "ANNIV_BOOK_STORE",
                     "VISIT_NEAREST_STORE")) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Anniversary T-10 store visit requested"
+                );
+
+
 
                 sendAnniversaryT10StoreVisit(phone);
                 saveStep(session, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT);
@@ -4245,6 +3545,15 @@ public class BotEngineServiceImpl implements BotEngineService {
             if (isPayload(cleanPayload,
                     "ANNIVERSARY_T10_BOOK_APPOINTMENT",
                     "BOOK_AN_APPOINTMENT")) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Anniversary T-10 book appointment"
+                );
 
                 sendAnniversaryT10CallbackConfirmation(phone);
                 saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
@@ -4372,6 +3681,7 @@ public class BotEngineServiceImpl implements BotEngineService {
     private boolean handleAnniversaryT10CarouselCallback(
             String phone,
             BotSession session,
+            String firstName,
             String cleanPayload
     ) {
         String gender = cleanPayload.contains("_M_") ? "MEN" : "WOMEN";
@@ -4380,6 +3690,16 @@ public class BotEngineServiceImpl implements BotEngineService {
 
         session.setSelectedCollection("MEN".equalsIgnoreCase(gender) ? BotSession.Collection.MENS : BotSession.Collection.WOMENS);
         session.setSelectedBrand(brandKey);
+
+        saveLead(
+                phone,
+                session.getCustomerId(),
+                firstName,
+                session,
+                Lead.LeadType.CALLBACK,
+                "Anniversary T-10 carousel request callback | gender=" + gender + " | brand=" + brandKey
+        );
+
         sendAnniversaryT10CallbackConfirmation(phone);
         saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
         return true;
