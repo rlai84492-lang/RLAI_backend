@@ -1,8 +1,11 @@
 package com.example.titan_watch_learning_project.serviceImpl;
 
 import com.example.titan_watch_learning_project.dto.DashboardResponse;
+import com.example.titan_watch_learning_project.entity.Lead;
+import com.example.titan_watch_learning_project.entity.Message;
 import com.example.titan_watch_learning_project.repository.DashboardDataRepository;
 import com.example.titan_watch_learning_project.repository.LeadRepository;
+import com.example.titan_watch_learning_project.repository.MessageRepository;
 import com.example.titan_watch_learning_project.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import java.util.*;
 public class DashboardServiceImpl implements DashboardService {
 
     private final DashboardDataRepository dashboardDataRepository;
+    private final MessageRepository messageRepository;
 
     private final LeadRepository leadRepository;
 
@@ -26,8 +30,8 @@ public class DashboardServiceImpl implements DashboardService {
 
         DashboardResponse.MetricsDto metrics = buildMetrics(sessions, leads);
         DashboardResponse.HourlyMessagesDto hourly = buildHourlyMessages();
-        Map<String, Long> styleCounts = buildStyleCounts(sessions, leads);
-        Map<String, Long> priceData = buildPriceData(sessions, leads);
+//        Map<String, Long> styleCounts = buildStyleCounts(sessions, leads);
+//        Map<String, Long> priceData = buildPriceData(sessions, leads);
         DashboardResponse.CampaignWeekDto campData = buildCampaignWeek();
         DashboardResponse.CollectionSplitDto collData = buildCollectionSplit(sessions, leads);
         List<DashboardResponse.ActivityEventDto> timeline = dashboardDataRepository.findRecentActivity();
@@ -37,8 +41,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .leads(leads)
                 .metrics(metrics)
                 .hourly(hourly)
-                .styleCounts(styleCounts)
-                .priceData(priceData)
+//                .styleCounts(styleCounts)
+//                .priceData(priceData)
                 .campData(campData)
                 .collData(collData)
                 .timeline(timeline)
@@ -50,46 +54,46 @@ public class DashboardServiceImpl implements DashboardService {
         return dashboardDataRepository.findSessions();
     }
 
-//    @Override
-//    public List<DashboardResponse.LeadDto> getLeads() {
-//        return dashboardDataRepository.findLeads();
-//    }
 
     private DashboardResponse.MetricsDto buildMetrics(
             List<DashboardResponse.SessionDto> sessions,
             List<DashboardResponse.LeadDto> leads
     ) {
-        long totalReached = sessions.size();
+        long totalReached     = sessions.size();
+        long activeSessions   = sessions.stream().filter(s -> Boolean.TRUE.equals(s.getIsActive())).count();
+        long callbackLeads    = leads.stream().filter(l -> "CALLBACK".equalsIgnoreCase(l.getLeadType())).count();
+        long storeVisits      = leads.stream().filter(l -> "STORE_VISIT".equalsIgnoreCase(l.getLeadType())).count();
+        long completedFlows   = sessions.stream().filter(s -> s.getCurrentStep() != null && s.getCurrentStep().contains("COMPLETED")).count();
+        long newLeads         = leads.stream().filter(l -> "NEW".equalsIgnoreCase(l.getStatus())).count();
+        long converted        = leads.stream().filter(l -> "CONVERTED".equalsIgnoreCase(l.getStatus())).count();
+        long catalogueViews   = sessions.stream().filter(s -> s.getCurrentStep() != null && s.getCurrentStep().contains("CATALOGUE")).count();
 
-        long activeSessions = sessions.stream()
-                .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
-                .count();
+        int conversionRate    = totalReached == 0 ? 0 : (int) Math.round((converted  * 100.0) / totalReached);
+        int completionRate    = totalReached == 0 ? 0 : (int) Math.round((completedFlows * 100.0) / totalReached);
 
-        long callbackLeads = leads.stream()
-                .filter(l -> "CALLBACK".equalsIgnoreCase(l.getLeadType()))
-                .count();
+        // Delivery / open / click rates — derived from message table later.
+        // For now return sensible defaults based on session data.
+// DashboardService mein
+        long totalSent      = messageRepository.countByDirectionAndStatus(
+                Message.Direction.OUTBOUND, Message.Status.SENT);
+        long totalDelivered = messageRepository.countByDirectionAndStatus(
+                Message.Direction.OUTBOUND, Message.Status.DELIVERED);
 
-        long storeVisits = leads.stream()
-                .filter(l -> "STORE_VISIT".equalsIgnoreCase(l.getLeadType()))
-                .count();
-
-        long completedFlows = sessions.stream()
-                .filter(s -> "COMPLETED".equalsIgnoreCase(s.getCurrentStep()))
-                .count();
-
-        long newLeads = leads.stream()
-                .filter(l -> "NEW".equalsIgnoreCase(l.getStatus()))
-                .count();
-
-        long converted = leads.stream()
-                .filter(l -> "CONVERTED".equalsIgnoreCase(l.getStatus()))
-                .count();
-
-        int conversionRate = totalReached == 0
-                ? 0
-                : (int) Math.round((converted * 100.0) / totalReached);
+        int deliveryRate = totalSent == 0 ? 0
+                : (int) Math.round((totalDelivered * 100.0) / totalSent);        int openRate     = totalReached > 0 ? (int) Math.round((activeSessions * 100.0) / totalReached) : 0;
+        int clickRate    = activeSessions > 0 ? (int) Math.round((callbackLeads + storeVisits) * 100.0 / activeSessions) : 0;
 
         return DashboardResponse.MetricsDto.builder()
+                // New 8-tile campaign metrics
+                .messagesSent(totalReached)
+                .deliveryRate(deliveryRate)
+                .openRate(Math.min(openRate, 100))
+                .clickRate(Math.min(clickRate, 100))
+                .callbackRequests(callbackLeads)
+                .storeVisitRequests(storeVisits)
+                .catalogueViews(catalogueViews)
+                .completionRate(completionRate)
+                // Legacy
                 .totalReached(totalReached)
                 .activeSessions(activeSessions)
                 .callbackLeads(callbackLeads)
@@ -100,6 +104,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .conversionRate(conversionRate)
                 .build();
     }
+
 
     private DashboardResponse.HourlyMessagesDto buildHourlyMessages() {
         Map<Integer, Map<String, Long>> dbCounts = dashboardDataRepository.findMessageCountsToday();
@@ -124,95 +129,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .build();
     }
 
-    private Map<String, Long> buildStyleCounts(
-            List<DashboardResponse.SessionDto> sessions,
-            List<DashboardResponse.LeadDto> leads
-    ) {
-        Map<String, Long> counts = new LinkedHashMap<>();
-        counts.put("MINIMAL_CHIC", 0L);
-        counts.put("BOLD_EDGY", 0L);
-        counts.put("LUXE_CLASSY", 0L);
-        counts.put("SPORTY_ADVENTUROUS", 0L);
 
-        for (DashboardResponse.SessionDto session : sessions) {
-            addStyleCount(counts, session.getSelectedStyle());
-        }
 
-        for (DashboardResponse.LeadDto lead : leads) {
-            addStyleCount(counts, lead.getSelectedStyle());
-        }
-
-        return counts;
-    }
-
-    private void addStyleCount(Map<String, Long> counts, String style) {
-        if (style == null || style.isBlank()) return;
-
-        String s = style.toUpperCase();
-
-        if (s.contains("MINIMAL")) {
-            counts.put("MINIMAL_CHIC", counts.get("MINIMAL_CHIC") + 1);
-        } else if (s.contains("BOLD")) {
-            counts.put("BOLD_EDGY", counts.get("BOLD_EDGY") + 1);
-        } else if (s.contains("LUXE")) {
-            counts.put("LUXE_CLASSY", counts.get("LUXE_CLASSY") + 1);
-        } else if (s.contains("SPORTY")) {
-            counts.put("SPORTY_ADVENTUROUS", counts.get("SPORTY_ADVENTUROUS") + 1);
-        }
-    }
-
-    private Map<String, Long> buildPriceData(
-            List<DashboardResponse.SessionDto> sessions,
-            List<DashboardResponse.LeadDto> leads
-    ) {
-        Map<String, Long> counts = new LinkedHashMap<>();
-        counts.put("₹2k–5k", 0L);
-        counts.put("₹5k–10k", 0L);
-        counts.put("₹10k–25k", 0L);
-        counts.put(">₹25k", 0L);
-
-        for (DashboardResponse.SessionDto session : sessions) {
-            addPriceFromRawStep(counts, session.getRawStep());
-        }
-
-        for (DashboardResponse.LeadDto lead : leads) {
-            addPriceFromText(counts, lead.getPriceRange());
-        }
-
-        return counts;
-    }
-
-    private void addPriceFromRawStep(Map<String, Long> counts, String rawStep) {
-        if (rawStep == null || rawStep.isBlank()) return;
-
-        String s = rawStep.toUpperCase();
-
-        if (s.contains("PRICE_2K_5K")) {
-            counts.put("₹2k–5k", counts.get("₹2k–5k") + 1);
-        } else if (s.contains("PRICE_5K_10K")) {
-            counts.put("₹5k–10k", counts.get("₹5k–10k") + 1);
-        } else if (s.contains("PRICE_10K_25K")) {
-            counts.put("₹10k–25k", counts.get("₹10k–25k") + 1);
-        } else if (s.contains("PRICE_25K_PLUS")) {
-            counts.put(">₹25k", counts.get(">₹25k") + 1);
-        }
-    }
-
-    private void addPriceFromText(Map<String, Long> counts, String priceRange) {
-        if (priceRange == null || priceRange.isBlank()) return;
-
-        String s = priceRange.toUpperCase();
-
-        if (s.contains("2000") || s.contains("2K")) {
-            counts.put("₹2k–5k", counts.get("₹2k–5k") + 1);
-        } else if (s.contains("5000") || s.contains("5K")) {
-            counts.put("₹5k–10k", counts.get("₹5k–10k") + 1);
-        } else if (s.contains("10000") || s.contains("10K")) {
-            counts.put("₹10k–25k", counts.get("₹10k–25k") + 1);
-        } else if (s.contains("25000") || s.contains("25K")) {
-            counts.put(">₹25k", counts.get(">₹25k") + 1);
-        }
-    }
 
     private DashboardResponse.CampaignWeekDto buildCampaignWeek() {
         Map<String, Long> rawCounts = dashboardDataRepository.findCampaignCountsLast7Days();
@@ -283,12 +201,29 @@ public class DashboardServiceImpl implements DashboardService {
                         .phone(lead.getPhone())
                         .leadType(lead.getLeadType() == null ? null : lead.getLeadType().name())
                         .selectedCollection(lead.getSelectedCollection())
-                        .selectedStyle(lead.getSelectedStyle())
-                        .priceRange(lead.getPriceRange())
+
                         .status(lead.getStatus() == null ? null : lead.getStatus().name())
-                        .createdAt(lead.getCreatedAt() == null ? null : lead.getCreatedAt().toString())
+                        .createdAt(lead.getCreatedAt())
                         .build())
                 .toList();
     }
 
+
+    // DashboardServiceImpl.java mein — public add karo
+    public DashboardResponse.LeadDto toLeadDto(Lead lead) {
+        return DashboardResponse.LeadDto.builder()
+                .id(lead.getId())
+                .customerName(lead.getCustomerName())
+                .phone(lead.getPhone())
+                .leadType(lead.getLeadType() == null ? null : lead.getLeadType().name())
+                .flow(lead.getFlow())
+                .selectedCollection(lead.getSelectedCollection())
+                .selectedBrand(lead.getSelectedBrand())
+                .stepName(lead.getStepName())
+                .status(lead.getStatus() == null ? null : lead.getStatus().name())
+                .notes(lead.getNotes())
+                // ← YE FIX KARO
+                .createdAt(lead.getCreatedAt())
+                .build();
+    }
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     Optional<Message> findByMid(String mid);
     List<Message> findByPhoneOrderBySentAtDesc(String phone);
+
+    long countByDirectionAndStatus(Message.Direction direction, Message.Status status);
 }

@@ -1,17 +1,12 @@
 package com.example.titan_watch_learning_project.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class DashboardResponse {
 
     private List<SessionDto> sessions;
@@ -24,22 +19,23 @@ public class DashboardResponse {
     private CollectionSplitDto collData;
     private List<ActivityEventDto> timeline;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Session ──────────────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class SessionDto {
-        private Long id;
-        private String customerName;
-        private String phone;
-        private String currentStep;
-        private String rawStep;
-        private String selectedCollection;
-        private String selectedStyle;
+        private Long    id;
+        private String  customerName;
+        private String  phone;
+        private String  currentStep;   // raw step e.g. BIRTHDAY_T10_CONFIRMATION_SENT
+        private String  rawStep;       // same — kept for backward compat
+        private String  flow;          // bday_t10 | bday_t0 | anniv_t10 | anniv_t0
+        private String  selectedCollection;
+        private String  selectedBrand;
+        private String  selectedStyle;
         private Boolean isActive;
-        private String lastActivity;
+        private String  lastActivity;
     }
 
+    // ── Lead ─────────────────────────────────────────────────────
     @Data
     @Builder
     @NoArgsConstructor
@@ -49,61 +45,65 @@ public class DashboardResponse {
         private String customerName;
         private String phone;
         private String leadType;
+        private String flow;
         private String selectedCollection;
-        private String selectedStyle;
-        private String priceRange;
+        private String selectedBrand;
         private String status;
-        private String createdAt;
+        private String notes;
+        private String stepName;        // ← ADD
+        private LocalDateTime createdAt;  // ← String se LocalDateTime karo
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Metrics ───────────────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class MetricsDto {
-        private Long totalReached;
-        private Long activeSessions;
-        private Long callbackLeads;
-        private Long storeVisits;
-        private Long completedFlows;
-        private Long newLeads;
-        private Long converted;
-        private Integer conversionRate;
+        // Campaign-level (shown in 8 tiles)
+        private long   messagesSent;
+        private int    deliveryRate;
+        private int    openRate;
+        private int    clickRate;
+        private long   callbackRequests;
+        private long   storeVisitRequests;
+        private long   catalogueViews;
+        private int    completionRate;
+
+        // Legacy (kept for backward compat)
+        private long   totalReached;
+        private long   activeSessions;
+        private long   callbackLeads;
+        private long   storeVisits;
+        private long   completedFlows;
+        private long   newLeads;
+        private long   converted;
+        private int    conversionRate;
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Hourly messages ───────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class HourlyMessagesDto {
         private List<String> labels;
-        private List<Long> inbound;
-        private List<Long> outbound;
+        private List<Long>   inbound;
+        private List<Long>   outbound;
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Campaign week ─────────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CampaignWeekDto {
         private List<String> labels;
-        private List<Long> t10;
-        private List<Long> tday;
+        private List<Long>   t10;
+        private List<Long>   tday;
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Collection split ──────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CollectionSplitDto {
-        private Long mens;
-        private Long womens;
+        private long mens;
+        private long womens;
+        private long couples;
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // ── Activity event ────────────────────────────────────────────
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ActivityEventDto {
         private String icon;
         private String text;

@@ -1,5 +1,5 @@
 package com.example.titan_watch_learning_project.service;//package com.example.titan.service;
-import com.example.titan_watch_learning_project.entity.WatchProduct;
+//import com.example.titan_watch_learning_project.entity.WatchProduct;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ public interface KarixApiService {
     String sendCarouselCards(String toPhone, String bodyText, List<Map<String, Object>> cards);
     String sendListMessage(String toPhone, String bodyText, List<Map<String, Object>> options);
 
-    boolean sendCarouselMessage(String phone, List<WatchProduct> products);
+//    boolean sendCarouselMessage(String phone, List<WatchProduct> products);
 
 
     boolean sendBrandCarouselMessage(

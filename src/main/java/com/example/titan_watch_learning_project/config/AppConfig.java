@@ -63,12 +63,15 @@ public class AppConfig implements WebMvcConfigurer {
 
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Auth login public
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/public/**",
-                                "/actuator/health"
-                        ).permitAll()
+                                // Find this block and add /api/auth/signup:
+                                .requestMatchers(
+                                        "/api/auth/login",
+                                        "/api/auth/signup",    // ← ADD THIS
+                                        "/api/public/**",
+                                        "/actuator/health"
+                                ).permitAll()
+
+                                .requestMatchers("/api/test/**").permitAll()
 
                         // Karix webhook public - very important
                         .requestMatchers(
@@ -79,17 +82,30 @@ public class AppConfig implements WebMvcConfigurer {
                         ).permitAll()
 
                         // Dashboard currently public because login functionality is ignored for now
-                        .requestMatchers(
-                                "/api/dashboard",
-                                "/api/dashboard/**",
-                                "/api/bot-sessions",
-                                "/api/bot-sessions/**",
-                                "/api/leads",
-                                "/api/leads/**",
-                                "/api/auth/me",
-                                "/api/auth/users",
-                                "/api/auth/users/**"
-                        ).hasRole("ADMIN")
+//                        .requestMatchers(
+//                                "/api/dashboard",
+//                                "/api/dashboard/**",
+//                                "/api/bot-sessions",
+//                                "/api/bot-sessions/**",
+//                                "/api/leads",
+//                                "/api/leads/**",
+//                                "/api/auth/me",
+//                                "/api/auth/users",
+//                                "/api/auth/users/**"
+//                        ).hasRole("ADMIN")
+
+                                // NEW:
+                                .requestMatchers(
+                                        "/api/dashboard",
+                                        "/api/dashboard/**",
+                                        "/api/bot-sessions",
+                                        "/api/bot-sessions/**",
+                                        "/api/leads",
+                                        "/api/leads/**",
+                                        "/api/auth/me",
+                                        "/api/auth/users",
+                                        "/api/auth/users/**"
+                                ).permitAll()
 
                         // Admin future APIs protected
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

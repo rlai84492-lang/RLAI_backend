@@ -22,72 +22,111 @@ public class DashboardDataRepository {
 
     public List<DashboardResponse.SessionDto> findSessions() {
         String sql = """
-                SELECT 
-                    bs.id AS id,
-                    bs.phone AS phone,
-                    bs.current_step AS current_step,
-                    bs.is_active AS is_active,
-                    bs.last_activity AS last_activity,
-                    c.name AS customer_name
-                FROM bot_sessions bs
-                LEFT JOIN customers c 
-                    ON c.id = bs.customer_id OR c.phone = bs.phone
-                ORDER BY bs.last_activity DESC
-                LIMIT 200
-                """;
+            SELECT
+                bs.id            AS id,
+                bs.phone         AS phone,
+                bs.current_step  AS current_step,
+                bs.is_active     AS is_active,
+                bs.last_activity AS last_activity,
+                bs.selected_collection AS selected_collection,
+                bs.selected_brand      AS selected_brand,
+                c.name           AS customer_name
+            FROM bot_sessions bs
+            LEFT JOIN customers c
+                ON c.id = bs.customer_id OR c.phone = bs.phone
+            ORDER BY bs.last_activity DESC
+            LIMIT 500
+            """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            String rawStep = safe(rs, "current_step");
-            String collection = extractCollection(rawStep);
-            String style = extractStyle(rawStep);
-            String dashboardStep = mapStep(rawStep);
+            String rawStep     = safe(rs, "current_step");
+            String collection  = normalizeCollection(safe(rs, "selected_collection"));
+            String brand       = safe(rs, "selected_brand");
+
+            // collection fallback: try to derive from step name
+            if (collection == null || collection.isBlank()) {
+                collection = extractCollection(rawStep);
+            }
 
             return DashboardResponse.SessionDto.builder()
                     .id(rs.getLong("id"))
                     .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
                     .phone(safe(rs, "phone"))
-                    .currentStep(dashboardStep)
+                    .currentStep(rawStep)      // ← raw step, NOT mapped
                     .rawStep(rawStep)
+                    .flow(detectFlow(rawStep)) // ← new field
                     .selectedCollection(collection)
-                    .selectedStyle(style)
+                    .selectedBrand(defaultIfBlank(brand, null))
+                    .selectedStyle(extractStyle(rawStep))
                     .isActive(rs.getBoolean("is_active"))
                     .lastActivity(toIso(rs, "last_activity"))
                     .build();
         });
     }
 
+    /**
+     * Derives which of the 4 dashboard flows a step belongs to.
+     * Returns one of: bday_t10 | bday_t0 | anniv_t10 | anniv_t0 | unknown
+     */
+    private String detectFlow(String rawStep) {
+        if (rawStep == null || rawStep.isBlank()) return "bday_t10";
+        String s = rawStep.toUpperCase();
+
+        if (s.startsWith("BIRTHDAY_T10_"))    return "bday_t10";
+        if (s.startsWith("BIRTHDAY_TDAY_"))   return "bday_t0";
+        if (s.startsWith("ANNIVERSARY_T10_")) return "anniv_t10";
+        if (s.startsWith("ANNIVERSARY_TDAY_"))return "anniv_t0";
+
+        // Legacy step names — map to bday_t10 as default
+        return "bday_t10";
+    }
+
     public List<DashboardResponse.LeadDto> findLeads() {
         try {
             String sql = """
-                    SELECT
-                        l.id AS id,
-                        COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
-                        COALESCE(l.phone, c.phone) AS phone,
-                        l.lead_type AS lead_type,
-                        l.selected_collection AS selected_collection,
-                        l.selected_style AS selected_style,
-                        l.price_range AS price_range,
-                        l.status AS status,
-                        l.created_at AS created_at
-                    FROM leads l
-                    LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
-                    ORDER BY l.created_at DESC
-                    LIMIT 200
-                    """;
+            SELECT
+                l.id                  AS id,
+                COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
+                COALESCE(l.phone, c.phone)    AS phone,
+                l.lead_type           AS lead_type,
+                l.flow                AS flow,
+                l.step_name           AS step_name,
+                l.selected_collection AS selected_collection,
+                l.selected_brand      AS selected_brand,
+                l.selected_style      AS selected_style,
+                l.status              AS status,
+                l.notes               AS notes,
+                l.created_at          AS created_at
+            FROM leads l
+            LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+            ORDER BY l.created_at DESC
+            LIMIT 500
+            """;
 
-            return jdbcTemplate.query(sql, (rs, rowNum) ->
-                    DashboardResponse.LeadDto.builder()
-                            .id(rs.getLong("id"))
-                            .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
-                            .phone(safe(rs, "phone"))
-                            .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
-                            .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
-                            .selectedStyle(normalizeStyleForDashboard(safe(rs, "selected_style")))
-                            .priceRange(normalizePriceForDashboard(safe(rs, "price_range")))
-                            .status(defaultIfBlank(safe(rs, "status"), "NEW"))
-                            .createdAt(toIso(rs, "created_at"))
-                            .build()
-            );
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                // flow NULL hai to step_name se detect karo
+                String flow     = safe(rs, "flow");
+                String stepName = safe(rs, "step_name");
+                String resolvedFlow = flow.isBlank()
+                        ? detectFlow(stepName)   // ← purane leads ke liye fallback
+                        : flow;
+
+                return DashboardResponse.LeadDto.builder()
+                        .id(rs.getLong("id"))
+                        .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+                        .phone(safe(rs, "phone"))
+                        .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
+                        .flow(resolvedFlow)                                          // ← fixed
+                        .stepName(stepName)                                          // ← added
+                        .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
+                        .selectedBrand(safe(rs, "selected_brand"))                   // ← added
+                        .status(defaultIfBlank(safe(rs, "status"), "NEW"))
+                        .notes(safe(rs, "notes"))
+                        .createdAt(rs.getTimestamp("created_at") == null
+                                ? null
+                                : rs.getTimestamp("created_at").toLocalDateTime())
+                        .build();
+            });
         } catch (Exception e) {
             log.warn("Could not read leads table. Returning empty leads list.", e);
             return new ArrayList<>();
@@ -163,30 +202,28 @@ public class DashboardDataRepository {
     }
 
     public Map<String, Long> findCampaignCountsLast7Days() {
-        Map<String, Long> data = new LinkedHashMap<>();
-
         try {
-            String sql = """
-                    SELECT 
-                        DATE(sent_at) AS sent_date,
-                        campaign_type AS campaign_type,
-                        COUNT(*) AS total
-                    FROM campaign_logs
-                    WHERE sent_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-                    GROUP BY DATE(sent_at), campaign_type
-                    ORDER BY sent_date
-                    """;
-
-            jdbcTemplate.query(sql, rs -> {
-                String key = rs.getString("sent_date") + "|" + safe(rs, "campaign_type").toUpperCase();
-                data.put(key, rs.getLong("total"));
-            });
+            // original query yahan
+            return jdbcTemplate.query(
+                    "SELECT DATE(sent_at) as date, flow, COUNT(*) as cnt " +
+                            "FROM campaign_logs " +
+                            "WHERE sent_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+                            "GROUP BY DATE(sent_at), flow",
+                    rs -> {
+                        Map<String, Long> result = new HashMap<>();
+                        while (rs.next()) {
+                            String key = rs.getString("date") + "|" + rs.getString("flow");
+                            result.put(key, rs.getLong("cnt"));
+                        }
+                        return result;
+                    }
+            );
         } catch (Exception e) {
-            log.warn("Could not read campaign_logs. Campaign chart will show zero data.", e);
+            log.warn("campaign_logs table not found, returning empty map");
+            return new HashMap<>();  // ← fallback
         }
-
-        return data;
     }
+
 
     private String buildActivityText(String name, String direction, String payload, String content) {
         String p = payload == null ? "" : payload.toUpperCase();
@@ -349,4 +386,10 @@ public class DashboardDataRepository {
     private String defaultIfBlank(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
     }
+
+
+
+
+
+
 }
