@@ -42,7 +42,7 @@ public class BotEngineServiceImpl implements BotEngineService {
             "https://titanwatchimages123.blob.core.windows.net/watch-images/watchs_products_images/Moodshoot%20Pdf%20Anniversary.pdf";
 
     // Testing values. Production me inko real delay se replace kar dena.
-    private static final long BIRTHDAY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 5;
+    private static final long BIRTHDAY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 30;
     private static final long ANNIVERSARY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 4;
     private static final long ANNIVERSARY_T10_DATE_BRIDGE_DELAY_SECONDS = 4;
 
@@ -920,12 +920,12 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
         String currentStep = safeStep(session);
 
         if (isBirthdayT10MonthConfirmationStep(currentStep)) {
-            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_YES", "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT")) {
+            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_YES", "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT", "YES" )) {
                 sendBirthdayT10Opener(phone, firstName);
                 saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
                 return true;
             }
-            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_NO", "NO_THAT_S_NOT_RIGHT", "NO_THATS_NOT_RIGHT", "NO_NOT_RIGHT")) {
+            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_NO", "NO_THAT_S_NOT_RIGHT", "NO_THATS_NOT_RIGHT", "NO_NOT_RIGHT", "NO" )) {
 
                 sendBirthdayT10DobCorrectionAsk(phone, firstName);
                 saveStep(session, STEP_BIRTHDAY_T10_DOB_PENDING);
@@ -1244,7 +1244,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
             String cleanPayload
     ) {
         // Old confirmation buttons
-        if (isPayload(cleanPayload, "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT")) {
+        if (isPayload(cleanPayload, "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT", "YES" )) {
             sendBirthdayT10Opener(phone, firstName);
             saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
             return true;
@@ -1501,7 +1501,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 "ANNIVERSARY_MONTH_YES",
                 "YES_THAT_S_CORRECT",
                 "YES_THATS_CORRECT",
-                "YES_CORRECT")) {
+                "YES_CORRECT", "YES" )) {
 
             sendAnniversaryT10Bridge(phone, firstName);
             saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
@@ -2188,7 +2188,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     "ANNIVERSARY_MONTH_YES",
                     "YES_THAT_S_CORRECT",
                     "YES_THATS_CORRECT",
-                    "YES_CORRECT")) {
+                    "YES_CORRECT", "YES")) {
 
                 sendAnniversaryT10Bridge(phone, firstName);
                 saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
@@ -2200,7 +2200,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     "ANNIVERSARY_MONTH_NO",
                     "NO_THAT_S_NOT_RIGHT",
                     "NO_THATS_NOT_RIGHT",
-                    "NO_NOT_RIGHT")) {
+                    "NO_NOT_RIGHT","NO")) {
 
                 sendAnniversaryT10DateCorrectionAsk(phone, firstName);
                 saveStep(session, STEP_ANNIVERSARY_T10_DATE_PENDING);
@@ -3937,3 +3937,13 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
 
 
 //https://sasquatch-hence-ferment.ngrok-free.dev/webhook
+
+
+//
+//Agar 1000 customers ko message gaya
+//200 ne "Report Spam" kiya
+//WhatsApp automatically account review mein daal deta hai
+//
+//
+
+

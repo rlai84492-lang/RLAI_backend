@@ -73,6 +73,9 @@ public class AppConfig implements WebMvcConfigurer {
 
                                 .requestMatchers("/api/test/**").permitAll()
 
+
+
+
                         // Karix webhook public - very important
                         .requestMatchers(
                                 "/webhook",

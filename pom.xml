@@ -34,7 +34,19 @@
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter-security</artifactId>-->
 <!--        </dependency>-->
+        <!-- RabbitMQ -->
 
+
+<!--        <dependency>-->
+<!--            <groupId>com.azure.spring</groupId>-->
+<!--            <artifactId>spring-cloud-azure-starter-servicebus-jms</artifactId>-->
+<!--            <version>5.19.0</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-amqp</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
