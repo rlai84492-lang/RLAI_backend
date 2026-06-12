@@ -32,7 +32,6 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardResponse.HourlyMessagesDto hourly = buildHourlyMessages();
 //        Map<String, Long> styleCounts = buildStyleCounts(sessions, leads);
 //        Map<String, Long> priceData = buildPriceData(sessions, leads);
-        DashboardResponse.CampaignWeekDto campData = buildCampaignWeek();
         DashboardResponse.CollectionSplitDto collData = buildCollectionSplit(sessions, leads);
         List<DashboardResponse.ActivityEventDto> timeline = dashboardDataRepository.findRecentActivity();
 
@@ -43,7 +42,6 @@ public class DashboardServiceImpl implements DashboardService {
                 .hourly(hourly)
 //                .styleCounts(styleCounts)
 //                .priceData(priceData)
-                .campData(campData)
                 .collData(collData)
                 .timeline(timeline)
                 .build();
@@ -132,38 +130,6 @@ public class DashboardServiceImpl implements DashboardService {
 
 
 
-    private DashboardResponse.CampaignWeekDto buildCampaignWeek() {
-        Map<String, Long> rawCounts = dashboardDataRepository.findCampaignCountsLast7Days();
-
-        List<String> labels = new ArrayList<>();
-        List<Long> t10 = new ArrayList<>();
-        List<Long> tday = new ArrayList<>();
-
-        LocalDate today = LocalDate.now();
-
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-
-            String label = date.getDayOfWeek()
-                    .getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
-
-            labels.add(label);
-
-            String dateKey = date.toString();
-
-            t10.add(rawCounts.getOrDefault(dateKey + "|T10", 0L)
-                    + rawCounts.getOrDefault(dateKey + "|T-10", 0L));
-
-            tday.add(rawCounts.getOrDefault(dateKey + "|TDAY", 0L)
-                    + rawCounts.getOrDefault(dateKey + "|T-DAY", 0L));
-        }
-
-        return DashboardResponse.CampaignWeekDto.builder()
-                .labels(labels)
-                .t10(t10)
-                .tday(tday)
-                .build();
-    }
 
     private DashboardResponse.CollectionSplitDto buildCollectionSplit(
             List<DashboardResponse.SessionDto> sessions,

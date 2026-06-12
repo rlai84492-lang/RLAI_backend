@@ -236,28 +236,7 @@ public class DashboardDataRepository {
         }
     }
 
-    public Map<String, Long> findCampaignCountsLast7Days() {
-        try {
-            // original query yahan
-            return jdbcTemplate.query(
-                    "SELECT DATE(sent_at) as date, flow, COUNT(*) as cnt " +
-                            "FROM campaign_logs " +
-                            "WHERE sent_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
-                            "GROUP BY DATE(sent_at), flow",
-                    rs -> {
-                        Map<String, Long> result = new HashMap<>();
-                        while (rs.next()) {
-                            String key = rs.getString("date") + "|" + rs.getString("flow");
-                            result.put(key, rs.getLong("cnt"));
-                        }
-                        return result;
-                    }
-            );
-        } catch (Exception e) {
-            log.warn("campaign_logs table not found, returning empty map");
-            return new HashMap<>();  // ← fallback
-        }
-    }
+
 
 
     private String buildActivityText(String name, String direction, String payload, String content) {
@@ -373,32 +352,7 @@ public class DashboardDataRepository {
         return s;
     }
 
-    private String normalizeStyleForDashboard(String value) {
-        if (value == null || value.isBlank()) return null;
-        String s = value.toUpperCase()
-                .replace("&", "AND")
-                .replace(" ", "_");
 
-        if (s.contains("MINIMAL")) return "MINIMAL_CHIC";
-        if (s.contains("BOLD")) return "BOLD_EDGY";
-        if (s.contains("LUXE")) return "LUXE_CLASSY";
-        if (s.contains("SPORTY")) return "SPORTY_ADVENTUROUS";
-
-        return s;
-    }
-
-    private String normalizePriceForDashboard(String value) {
-        if (value == null || value.isBlank()) return null;
-
-        String s = value.toUpperCase();
-
-        if (s.contains("2K") || s.contains("2000")) return "2000-5000";
-        if (s.contains("5K") || s.contains("5000")) return "5000-10000";
-        if (s.contains("10K") || s.contains("10000")) return "10000-25000";
-        if (s.contains("25K") || s.contains("25000")) return "25000+";
-
-        return value;
-    }
 
     private String safe(ResultSet rs, String column) {
         try {
