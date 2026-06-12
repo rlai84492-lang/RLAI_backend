@@ -50,7 +50,8 @@ public class DashboardDataRepository {
         )
         ORDER BY bs.last_activity DESC
         LIMIT 500
-            """;
+        """;
+
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             String rawStep     = safe(rs, "current_step");
@@ -209,10 +210,11 @@ public class DashboardDataRepository {
                 OR current_step LIKE 'ANNIVERSARY_T10_%'
                 OR current_step LIKE 'ANNIVERSARY_TDAY_%'
             )
+            AND m.button_payload IS NOT NULL
+            AND m.button_payload != ''
             ORDER BY m.sent_at DESC
             LIMIT 10
             """;
-
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> {
                 String name = defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User");
