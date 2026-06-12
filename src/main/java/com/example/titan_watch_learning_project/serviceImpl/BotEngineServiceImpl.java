@@ -225,7 +225,6 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     .customerName(customerName)
                     .leadType(leadType)
                     .status(Lead.LeadStatus.NEW)
-                    .flow(detectFlow(session != null ? session.getCurrentStep() : null))  // ← ADD THIS
                     .selectedCollection(selectedCollection)
                     .notes(notes)
                     .build();
@@ -3916,37 +3915,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
         saveStep(session, STEP_BIRTHDAY_TDAY_TEMPLATE_SENT);
     }
 
-//    private void handleWelcome(String phone, String customerName, BotSession session) {
-//        String name = customerName == null || customerName.isBlank() ? "there" : customerName;
-//
-//        karixApiService.sendButtonMessage(
-//                phone,
-//                "Happy to hear from you, *" + name + "!* 🎂\n\n"
-//                        + "Your birthday month is here — and we've put together something from the Titan collection just for you.\n\n"
-//                        + "What would you like to do?",
-//                List.of(
-//                        Map.of("title", "Find my watch", "payload", "FIND_BIRTHDAY_WATCH"),
-//                        Map.of("title", "Birthday offers", "payload", "BIRTHDAY_OFFERS")
-//                )
-//        );
-//
-//        saveStep(session, STEP_WELCOME_SENT);
-//    }
-
-
-        private void handleWelcome(String phone, String customerName, BotSession session) {
-
-        // ← ADD: Sirf hamare templates ke users ko respond karo
-        String currentStep = safeStep(session);
-
-        // Naya session hai (WELCOME step) → check karo
-        // Agar ye hamare kisi bhi flow ka part nahi → ignore karo
-        if (currentStep.equals(STEP_WELCOME) || currentStep.isBlank()) {
-            log.info("Ignoring unknown user phone={} — no active flow session", phone);
-            return; // ← Random users ko kuch mat bhejo
-        }
-
-        // Active flow session hai → welcome bhejo
+    private void handleWelcome(String phone, String customerName, BotSession session) {
         String name = customerName == null || customerName.isBlank() ? "there" : customerName;
 
         karixApiService.sendButtonMessage(
@@ -3963,8 +3932,6 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
         saveStep(session, STEP_WELCOME_SENT);
     }
 }
-
-
 
 //http://40.80.81.142/webhook
 
