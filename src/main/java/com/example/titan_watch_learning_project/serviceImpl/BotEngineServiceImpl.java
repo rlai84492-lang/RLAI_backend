@@ -225,6 +225,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     .customerName(customerName)
                     .leadType(leadType)
                     .status(Lead.LeadStatus.NEW)
+                    .flow(detectFlow(session != null ? session.getCurrentStep() : null))  // ← ADD THIS
                     .selectedCollection(selectedCollection)
                     .notes(notes)
                     .build();
