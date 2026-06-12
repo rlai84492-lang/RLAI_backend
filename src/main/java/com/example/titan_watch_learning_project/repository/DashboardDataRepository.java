@@ -20,22 +20,36 @@ public class DashboardDataRepository {
 
     private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+
+
+    private static final String TEMPLATE_FILTER =
+            "('tw_bday_t', 'tw_bday', 'tw_anniv_t', 'tw_anniv')";
+
+    private static final String OUR_TEMPLATE_STEPS =
+            "'BIRTHDAY_T10_%', 'BIRTHDAY_TDAY_%', 'ANNIVERSARY_T10_%', 'ANNIVERSARY_TDAY_%'";
+
     public List<DashboardResponse.SessionDto> findSessions() {
         String sql = """
-            SELECT
-                bs.id            AS id,
-                bs.phone         AS phone,
-                bs.current_step  AS current_step,
-                bs.is_active     AS is_active,
-                bs.last_activity AS last_activity,
-                bs.selected_collection AS selected_collection,
-                bs.selected_brand      AS selected_brand,
-                c.name           AS customer_name
-            FROM bot_sessions bs
-            LEFT JOIN customers c
-                ON c.id = bs.customer_id OR c.phone = bs.phone
-            ORDER BY bs.last_activity DESC
-            LIMIT 500
+        SELECT
+            bs.id            AS id,
+            bs.phone         AS phone,
+            bs.current_step  AS current_step,
+            bs.is_active     AS is_active,
+            bs.last_activity AS last_activity,
+            bs.selected_collection AS selected_collection,
+            bs.selected_brand      AS selected_brand,
+            c.name           AS customer_name
+        FROM bot_sessions bs
+        LEFT JOIN customers c
+            ON c.id = bs.customer_id OR c.phone = bs.phone
+        WHERE (
+            bs.current_step LIKE 'BIRTHDAY_T10_%'
+            OR bs.current_step LIKE 'BIRTHDAY_TDAY_%'
+            OR bs.current_step LIKE 'ANNIVERSARY_T10_%'
+            OR bs.current_step LIKE 'ANNIVERSARY_TDAY_%'
+        )
+        ORDER BY bs.last_activity DESC
+        LIMIT 500
             """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -99,6 +113,13 @@ public class DashboardDataRepository {
                 l.created_at          AS created_at
             FROM leads l
             LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+            WHERE (
+                l.flow IN ('bday_t10', 'bday_t0', 'anniv_t10', 'anniv_t0')
+                OR l.step_name LIKE 'BIRTHDAY_T10_%'
+                OR l.step_name LIKE 'BIRTHDAY_TDAY_%'
+                OR l.step_name LIKE 'ANNIVERSARY_T10_%'
+                OR l.step_name LIKE 'ANNIVERSARY_TDAY_%'
+            )
             ORDER BY l.created_at DESC
             LIMIT 500
             """;
@@ -135,15 +156,22 @@ public class DashboardDataRepository {
 
     public Map<Integer, Map<String, Long>> findMessageCountsToday() {
         String sql = """
-                SELECT 
-                    HOUR(sent_at) AS hour_value,
-                    direction AS direction,
-                    COUNT(*) AS total
-                FROM messages
-                WHERE DATE(sent_at) = CURDATE()
-                GROUP BY HOUR(sent_at), direction
-                ORDER BY hour_value
-                """;
+            SELECT 
+                HOUR(sent_at) AS hour_value,
+                direction AS direction,
+                COUNT(*) AS total
+            FROM messages
+            WHERE DATE(sent_at) = CURDATE()
+            AND phone IN (
+                SELECT DISTINCT phone FROM bot_sessions
+                WHERE current_step LIKE 'BIRTHDAY_T10_%'
+                OR current_step LIKE 'BIRTHDAY_TDAY_%'
+                OR current_step LIKE 'ANNIVERSARY_T10_%'
+                OR current_step LIKE 'ANNIVERSARY_TDAY_%'
+            )
+            GROUP BY HOUR(sent_at), direction
+            ORDER BY hour_value
+            """;
 
         Map<Integer, Map<String, Long>> result = new HashMap<>();
 
@@ -165,18 +193,25 @@ public class DashboardDataRepository {
 
     public List<DashboardResponse.ActivityEventDto> findRecentActivity() {
         String sql = """
-                SELECT 
-                    m.phone AS phone,
-                    m.direction AS direction,
-                    m.message_content AS message_content,
-                    m.button_payload AS button_payload,
-                    m.sent_at AS sent_at,
-                    c.name AS customer_name
-                FROM messages m
-                LEFT JOIN customers c ON c.phone = m.phone
-                ORDER BY m.sent_at DESC
-                LIMIT 10
-                """;
+            SELECT 
+                m.phone AS phone,
+                m.direction AS direction,
+                m.message_content AS message_content,
+                m.button_payload AS button_payload,
+                m.sent_at AS sent_at,
+                c.name AS customer_name
+            FROM messages m
+            LEFT JOIN customers c ON c.phone = m.phone
+            WHERE m.phone IN (
+                SELECT DISTINCT phone FROM bot_sessions
+                WHERE current_step LIKE 'BIRTHDAY_T10_%'
+                OR current_step LIKE 'BIRTHDAY_TDAY_%'
+                OR current_step LIKE 'ANNIVERSARY_T10_%'
+                OR current_step LIKE 'ANNIVERSARY_TDAY_%'
+            )
+            ORDER BY m.sent_at DESC
+            LIMIT 10
+            """;
 
         try {
             return jdbcTemplate.query(sql, (rs, rowNum) -> {
