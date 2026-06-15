@@ -55,6 +55,9 @@ public class BotEngineServiceImpl implements BotEngineService {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH);
 
+
+
+
     // ---------------------------------------------------------------------
     // Step names - meaningful names only for new saves.
     // ---------------------------------------------------------------------
@@ -1197,7 +1200,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
         }
 
         if (isPayload(cleanPayload, "ANNIVERSARY_MONTH_YES")) {
-            sendAnniversaryT10Bridge(phone, firstName);
+            sendAnniversaryT10Opener(phone, firstName);
             saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
             return true;
         }
@@ -1505,7 +1508,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 "YES_THATS_CORRECT",
                 "YES_CORRECT", "YES" )) {
 
-            sendAnniversaryT10Bridge(phone, firstName);
+            sendAnniversaryT10Opener(phone, firstName);
             saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
             return true;
         }
@@ -1820,8 +1823,8 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
             return false;
         }
 
-        if (isValidDate(text)) {
-            LocalDate dob = LocalDate.parse(text.trim(), DATE_FORMATTER);
+        LocalDate dob = parseFlexibleDate(text);
+        if (dob != null) {
             updateCustomerBirthday(customerId, dob);
 
             saveStep(session, STEP_BIRTHDAY_T10_BRIDGE_PENDING);
@@ -2192,8 +2195,8 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     "YES_THATS_CORRECT",
                     "YES_CORRECT", "YES")) {
 
-                sendAnniversaryT10Bridge(phone, firstName);
-                saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
+                sendAnniversaryT10Opener(phone, firstName);               // ← DIRECT OPENER
+                saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);  // ← DIRECT OPENER STEP
                 return true;
             }
 
@@ -2390,8 +2393,8 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
             return false;
         }
 
-        if (isValidDate(text)) {
-            LocalDate anniversaryDate = LocalDate.parse(text.trim(), DATE_FORMATTER);
+        LocalDate anniversaryDate = parseFlexibleDate(text);
+        if (anniversaryDate != null) {
             updateCustomerAnniversary(customerId, anniversaryDate);
 
             saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_PENDING);
@@ -3766,17 +3769,66 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
         return customerName.trim().split("\\s+")[0];
     }
 
-    private boolean isValidDate(String text) {
-        if (text == null || text.isBlank()) {
-            return false;
-        }
+//
+//    private boolean isValidDate(String text) {
+//        if (text == null || text.isBlank()) {
+//            return false;
+//        }
+//
+//        try {
+//            LocalDate.parse(text.trim(), DATE_FORMATTER);
+//            return true;
+//        } catch (DateTimeParseException e) {
+//            return false;
+//        }
+//    }
+//
+//
+////    private boolean isValidDate(String text) {
+////        if (text == null || text.isBlank()) {
+////            return false;
+////        }
+////
+////        try {
+////            LocalDate.parse(text.trim(), DATE_FORMATTER);
+////            return true;
+////        } catch (DateTimeParseException e) {
+////            return false;
+////        }
+////    }
+///
+///
+///
+///
 
-        try {
-            LocalDate.parse(text.trim(), DATE_FORMATTER);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
+
+
+private LocalDate parseFlexibleDate(String text) {
+    if (text == null || text.isBlank()) {
+        return null;
+    }
+
+    String digitsOnly = text.trim().replaceAll("[^0-9]", "");
+
+    if (digitsOnly.length() != 8) {
+        return null;
+    }
+
+    try {
+        String day = digitsOnly.substring(0, 2);
+        String month = digitsOnly.substring(2, 4);
+        String year = digitsOnly.substring(4, 8);
+
+        String normalized = day + "/" + month + "/" + year;
+
+        return LocalDate.parse(normalized, DATE_FORMATTER);
+    } catch (DateTimeParseException e) {
+        return null;
+    }
+}
+
+    private boolean isValidDate(String text) {
+        return parseFlexibleDate(text) != null;
     }
 
     private String formatMonthName(String month) {
