@@ -865,8 +865,8 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 "💍 *Let's find the perfect watch for the occasion.*\n\nBrowsing for:",
                 List.of(
                         Map.of("title", "Men's collection", "payload", "ANNIVERSARY_TDAY_MENS_COLLECTION"),
-                        Map.of("title", "Women's collection", "payload", "ANNIVERSARY_TDAY_WOMENS_COLLECTION"),
-                        Map.of("title", "Couple Watches 💍", "payload", "ANNIVERSARY_TDAY_COUPLE_WATCHES")
+                        Map.of("title", "Women's collection", "payload", "ANNIVERSARY_TDAY_WOMENS_COLLECTION")
+//                        Map.of("title", "Couple Watches 💍", "payload", "ANNIVERSARY_TDAY_COUPLE_WATCHES")
                 )
         );
     }
@@ -2278,18 +2278,42 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 return sendAnniversaryT10BrandCarousel(phone, session, firstName, "WOMEN");
             }
 
-            if (isPayload(cleanPayload,
-                    "ANNIVERSARY_T10_COUPLE_WATCHES",
-                    "COUPLE_WATCHES",
-                    "COUPLE")) {
+//            if (isPayload(cleanPayload,
+//                    "ANNIVERSARY_T10_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE")) {
+//
+//                sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
+//                scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
+//                return true;
+//            }
 
-                sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
-                session.setSelectedCollection(BotSession.Collection.COUPLES);
-                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
-                scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
-                return true;
-            }
+
+//            For Now Just I do commend Couple  watchs
+//            if (isPayload(cleanPayload,
+//                    "ANNIVERSARY_T10_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE")) {
+//
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
+//
+//                taskScheduler.schedule(() -> {
+//                    BotSession latest = getLatestSession(phone);
+//                    if (latest == null || !isCurrentStep(latest, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT)) {
+//                        return;
+//                    }
+//                    sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
+//                    scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
+//                }, Instant.now().plusSeconds(30));
+//
+//                return true;
+//            }
+
         }
+
 
         if (isAnniversaryT10BrandCarouselStep(currentStep)) {
 
@@ -2658,17 +2682,19 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "WOMEN");
             }
 
-            if (isPayload(cleanPayload,
-                    "ANNIVERSARY_TDAY_COUPLE_WATCHES",
-                    "COUPLE_WATCHES",
-                    "COUPLE_WATCHES_💍",
-                    "COUPLE")) {
-                sendAnniversaryTDayCoupleWatchesCatalogue(phone, firstName);
-                session.setSelectedCollection(BotSession.Collection.COUPLES);
-                saveStep(session, STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT);
-                scheduleAnniversaryTDayCollectionCatalogueFollowUp(phone, firstName);
-                return true;
-            }
+
+//            Just I do comment couple
+//            if (isPayload(cleanPayload,
+//                    "ANNIVERSARY_TDAY_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE_WATCHES_💍",
+//                    "COUPLE")) {
+//                sendAnniversaryTDayCoupleWatchesCatalogue(phone, firstName);
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT);
+//                scheduleAnniversaryTDayCollectionCatalogueFollowUp(phone, firstName);
+//                return true;
+//            }
 
             // Carousel explore / callback
             if (isExploreCarouselPayload(cleanPayload)) {
@@ -3073,9 +3099,9 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                         + "👉Browsing for:",
                 List.of(
                         Map.of("title", "Men's collection", "payload", "ANNIVERSARY_T10_MENS_COLLECTION"),
-                        Map.of("title", "Women's collection", "payload", "ANNIVERSARY_T10_WOMENS_COLLECTION"),
-                        Map.of("title", "Couple Watches 💍", "payload", "ANNIVERSARY_T10_COUPLE_WATCHES")
-                )
+                        Map.of("title", "Women's collection", "payload", "ANNIVERSARY_T10_WOMENS_COLLECTION")
+//                        Map.of("title", "Couple Watches 💍", "payload", "ANNIVERSARY_T10_COUPLE_WATCHES")
+                       )
         );
     }
 
@@ -3298,13 +3324,23 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
 
         // URL encode karo — spaces ko %20 se replace karo
         String encodedUrl = catalogueUrl.replace(" ", "%20");
+//
+//        boolean sent = karixApiService.sendDocumentMessage(
+//                phone,
+//                encodedUrl,   // ← encoded URL use karo
+//                "📖 Here's the " + brandName + " collection, " + firstName + ".\n\n"
+//                        + "Take your time browsing - we'll check back in a moment.",
+//                brandName.replace(" ", "_") + "_Collection.pdf"
+//        );
 
         boolean sent = karixApiService.sendDocumentMessage(
                 phone,
-                encodedUrl,   // ← encoded URL use karo
+                encodedUrl,
                 "📖 Here's the " + brandName + " collection, " + firstName + ".\n\n"
                         + "Take your time browsing - we'll check back in a moment.",
-                brandName.replace(" ", "_") + "_Collection.pdf"
+                "Titan_World_Collection.pdf"   // ← sab ke liye same naam
+                // TODO: Jab individual PDFs aayein toh restore:
+                // brandName.replace(" ", "_") + "_Collection.pdf"
         );
 
         if (!sent) {
