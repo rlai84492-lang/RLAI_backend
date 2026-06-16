@@ -43,7 +43,7 @@ public class BotEngineServiceImpl implements BotEngineService {
 
     // Testing values. Production me inko real delay se replace kar dena.
     private static final long BIRTHDAY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 30;
-    private static final long ANNIVERSARY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 4;
+    private static final long ANNIVERSARY_T10_CATALOGUE_FOLLOW_UP_DELAY_SECONDS = 30;
     private static final long ANNIVERSARY_T10_DATE_BRIDGE_DELAY_SECONDS = 4;
 
 
@@ -157,7 +157,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
 
 
 
-    private static final long ANNIVERSARY_TDAY_STORE_HELP_DELAY_SECONDS = 4;
+    private static final long ANNIVERSARY_TDAY_STORE_HELP_DELAY_SECONDS = 30;
     private static final long ANNIVERSARY_TDAY_FINAL_REMINDER_DELAY_SECONDS = 4;
     private static final long ANNIVERSARY_TDAY_EXIT_DELAY_SECONDS = 4;
 
