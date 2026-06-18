@@ -47,6 +47,33 @@ public class DashboardServiceImpl implements DashboardService {
                 .build();
     }
 
+
+
+    public DashboardResponse getDashboardDataByFlow(String flow) {
+        String likePattern = switch (flow) {
+            case "bday_t10"  -> "BIRTHDAY_T10_%";
+            case "bday_t0"   -> "BIRTHDAY_TDAY_%";
+            case "anniv_t10" -> "ANNIVERSARY_T10_%";
+            case "anniv_t0"  -> "ANNIVERSARY_TDAY_%";
+            default          -> "BIRTHDAY_T10_%";
+        };
+
+        List<DashboardResponse.SessionDto> sessions =
+                dashboardDataRepository.findSessionsByFlow(likePattern);
+        List<DashboardResponse.LeadDto> leads =
+                dashboardDataRepository.findLeadsByFlow(flow);
+
+        return DashboardResponse.builder()
+                .sessions(sessions)
+                .leads(leads)
+                .metrics(buildMetrics(sessions, leads))
+                .hourly(buildHourlyMessages())
+                .collData(buildCollectionSplit(sessions, leads))
+                .timeline(dashboardDataRepository.findRecentActivity())
+                .build();
+    }
+
+
     @Override
     public List<DashboardResponse.SessionDto> getSessions() {
         return dashboardDataRepository.findSessions();
@@ -58,40 +85,44 @@ public class DashboardServiceImpl implements DashboardService {
             List<DashboardResponse.LeadDto> leads
     ) {
         long totalReached     = sessions.size();
-        long activeSessions   = sessions.stream().filter(s -> Boolean.TRUE.equals(s.getIsActive())).count();
-        long callbackLeads    = leads.stream().filter(l -> "CALLBACK".equalsIgnoreCase(l.getLeadType())).count();
-        long storeVisits      = leads.stream().filter(l -> "STORE_VISIT".equalsIgnoreCase(l.getLeadType())).count();
-        long completedFlows   = sessions.stream().filter(s -> s.getCurrentStep() != null && s.getCurrentStep().contains("COMPLETED")).count();
-        long newLeads         = leads.stream().filter(l -> "NEW".equalsIgnoreCase(l.getStatus())).count();
-        long converted        = leads.stream().filter(l -> "CONVERTED".equalsIgnoreCase(l.getStatus())).count();
-        long catalogueViews   = sessions.stream().filter(s -> s.getCurrentStep() != null && s.getCurrentStep().contains("CATALOGUE")).count();
+        long activeSessions   = sessions.stream()
+                .filter(s -> Boolean.TRUE.equals(s.getIsActive())).count();
+        long callbackLeads    = leads.stream()
+                .filter(l -> "CALLBACK".equalsIgnoreCase(l.getLeadType())).count();
+        long storeVisits      = leads.stream()
+                .filter(l -> "STORE_VISIT".equalsIgnoreCase(l.getLeadType())).count();
+        long completedFlows   = sessions.stream()
+                .filter(s -> s.getCurrentStep() != null
+                        && s.getCurrentStep().contains("COMPLETED")).count();
+        long catalogueViews   = sessions.stream()
+                .filter(s -> s.getCurrentStep() != null
+                        && s.getCurrentStep().contains("CATALOGUE")).count();
+        long newLeads         = leads.stream()
+                .filter(l -> "NEW".equalsIgnoreCase(l.getStatus())).count();
+        long converted        = leads.stream()
+                .filter(l -> "CONVERTED".equalsIgnoreCase(l.getStatus())).count();
 
-        int conversionRate    = totalReached == 0 ? 0 : (int) Math.round((converted  * 100.0) / totalReached);
-        int completionRate    = totalReached == 0 ? 0 : (int) Math.round((completedFlows * 100.0) / totalReached);
-
-        // Delivery / open / click rates — derived from message table later.
-        // For now return sensible defaults based on session data.
-// DashboardService mein
-        long totalSent      = messageRepository.countByDirectionAndStatus(
-                Message.Direction.OUTBOUND, Message.Status.SENT);
-        long totalDelivered = messageRepository.countByDirectionAndStatus(
-                Message.Direction.OUTBOUND, Message.Status.DELIVERED);
-
-        int deliveryRate = totalSent == 0 ? 0
-                : (int) Math.round((totalDelivered * 100.0) / totalSent);        int openRate     = totalReached > 0 ? (int) Math.round((activeSessions * 100.0) / totalReached) : 0;
-        int clickRate    = activeSessions > 0 ? (int) Math.round((callbackLeads + storeVisits) * 100.0 / activeSessions) : 0;
+        // ← Delivery rate — sessions se calculate karo (flow-wise)
+        // Active sessions = opened/read kiya
+        int deliveryRate  = totalReached == 0 ? 0
+                : (int) Math.round((activeSessions * 100.0) / totalReached);
+        int openRate      = deliveryRate; // same as delivery for now
+        int clickRate     = activeSessions == 0 ? 0
+                : (int) Math.round((callbackLeads + storeVisits) * 100.0 / activeSessions);
+        int completionRate = totalReached == 0 ? 0
+                : (int) Math.round((completedFlows * 100.0) / totalReached);
+        int conversionRate = totalReached == 0 ? 0
+                : (int) Math.round((converted * 100.0) / totalReached);
 
         return DashboardResponse.MetricsDto.builder()
-                // New 8-tile campaign metrics
                 .messagesSent(totalReached)
-                .deliveryRate(deliveryRate)
+                .deliveryRate(Math.min(deliveryRate, 100))
                 .openRate(Math.min(openRate, 100))
                 .clickRate(Math.min(clickRate, 100))
                 .callbackRequests(callbackLeads)
                 .storeVisitRequests(storeVisits)
                 .catalogueViews(catalogueViews)
                 .completionRate(completionRate)
-                // Legacy
                 .totalReached(totalReached)
                 .activeSessions(activeSessions)
                 .callbackLeads(callbackLeads)

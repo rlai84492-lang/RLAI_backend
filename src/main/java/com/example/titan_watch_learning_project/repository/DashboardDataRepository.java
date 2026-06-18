@@ -1,3 +1,510 @@
+//package com.example.titan_watch_learning_project.repository;
+//
+//import com.example.titan_watch_learning_project.dto.DashboardResponse;
+//import lombok.RequiredArgsConstructor;
+//import lombok.extern.slf4j.Slf4j;
+//import org.springframework.jdbc.core.JdbcTemplate;
+//import org.springframework.stereotype.Repository;
+//
+//import java.sql.ResultSet;
+//import java.time.LocalDateTime;
+//import java.time.format.DateTimeFormatter;
+//import java.util.*;
+//
+//@Slf4j
+//@Repository
+//@RequiredArgsConstructor
+//public class DashboardDataRepository {
+//
+//    private final JdbcTemplate jdbcTemplate;
+//
+//    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+//
+//
+//
+//    private static final String TEMPLATE_FILTER =
+//            "('tw_bday_t', 'tw_bday', 'tw_anniv_t', 'tw_anniv')";
+//
+//    private static final String OUR_TEMPLATE_STEPS =
+//            "'BIRTHDAY_T10_%', 'BIRTHDAY_TDAY_%', 'ANNIVERSARY_T10_%', 'ANNIVERSARY_TDAY_%'";
+//
+//    public List<DashboardResponse.SessionDto> findSessions() {
+//        String sql = """
+//        SELECT
+//            bs.id            AS id,
+//            bs.phone         AS phone,
+//            bs.current_step  AS current_step,
+//            bs.is_active     AS is_active,
+//            bs.last_activity AS last_activity,
+//            bs.selected_collection AS selected_collection,
+//            bs.selected_brand      AS selected_brand,
+//            c.name           AS customer_name
+//        FROM bot_sessions bs
+//        LEFT JOIN customers c
+//            ON c.id = bs.customer_id OR c.phone = bs.phone
+//        WHERE (
+//            bs.current_step LIKE 'BIRTHDAY_T10_%'
+//            OR bs.current_step LIKE 'BIRTHDAY_TDAY_%'
+//            OR bs.current_step LIKE 'ANNIVERSARY_T10_%'
+//            OR bs.current_step LIKE 'ANNIVERSARY_TDAY_%'
+//        )
+//        ORDER BY bs.last_activity DESC
+//        LIMIT 500
+//        """;
+//
+//
+//        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+//            String rawStep     = safe(rs, "current_step");
+//            String collection  = normalizeCollection(safe(rs, "selected_collection"));
+//            String brand       = safe(rs, "selected_brand");
+//
+//            // collection fallback: try to derive from step name
+//            if (collection == null || collection.isBlank()) {
+//                collection = extractCollection(rawStep);
+//            }
+//
+//            return DashboardResponse.SessionDto.builder()
+//                    .id(rs.getLong("id"))
+//                    .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+//                    .phone(safe(rs, "phone"))
+//                    .currentStep(rawStep)      // ← raw step, NOT mapped
+//                    .rawStep(rawStep)
+//                    .flow(detectFlow(rawStep)) // ← new field
+//                    .selectedCollection(collection)
+//                    .selectedBrand(defaultIfBlank(brand, null))
+//                    .selectedStyle(extractStyle(rawStep))
+//                    .isActive(rs.getBoolean("is_active"))
+//                    .lastActivity(toIso(rs, "last_activity"))
+//                    .build();
+//        });
+//    }
+//
+//    /**
+//     * Derives which of the 4 dashboard flows a step belongs to.
+//     * Returns one of: bday_t10 | bday_t0 | anniv_t10 | anniv_t0 | unknown
+//     */
+//    private String detectFlow(String rawStep) {
+//        if (rawStep == null || rawStep.isBlank()) return "bday_t10";
+//        String s = rawStep.toUpperCase();
+//
+//        if (s.startsWith("BIRTHDAY_T10_"))    return "bday_t10";
+//        if (s.startsWith("BIRTHDAY_TDAY_"))   return "bday_t0";
+//        if (s.startsWith("ANNIVERSARY_T10_")) return "anniv_t10";
+//        if (s.startsWith("ANNIVERSARY_TDAY_"))return "anniv_t0";
+//
+//        // Legacy step names — map to bday_t10 as default
+//        return "bday_t10";
+//    }
+//
+//    public List<DashboardResponse.LeadDto> findLeads() {
+//        try {
+//            String sql = """
+//            SELECT
+//                l.id                  AS id,
+//                COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
+//                COALESCE(l.phone, c.phone)    AS phone,
+//                l.lead_type           AS lead_type,
+//                l.flow                AS flow,
+//                l.step_name           AS step_name,
+//                l.selected_collection AS selected_collection,
+//                l.selected_brand      AS selected_brand,
+//                l.selected_style      AS selected_style,
+//                l.status              AS status,
+//                l.notes               AS notes,
+//                l.created_at          AS created_at
+//            FROM leads l
+//            LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+//            WHERE (
+//                l.flow IN ('bday_t10', 'bday_t0', 'anniv_t10', 'anniv_t0')
+//                OR l.step_name LIKE 'BIRTHDAY_T10_%'
+//                OR l.step_name LIKE 'BIRTHDAY_TDAY_%'
+//                OR l.step_name LIKE 'ANNIVERSARY_T10_%'
+//                OR l.step_name LIKE 'ANNIVERSARY_TDAY_%'
+//            )
+//            ORDER BY l.created_at DESC
+//            LIMIT 500
+//            """;
+//
+//            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+//                // flow NULL hai to step_name se detect karo
+//                String flow     = safe(rs, "flow");
+//                String stepName = safe(rs, "step_name");
+//                String resolvedFlow = flow.isBlank()
+//                        ? detectFlow(stepName)   // ← purane leads ke liye fallback
+//                        : flow;
+//
+//                return DashboardResponse.LeadDto.builder()
+//                        .id(rs.getLong("id"))
+//                        .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+//                        .phone(safe(rs, "phone"))
+//                        .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
+//                        .flow(resolvedFlow)                                          // ← fixed
+//                        .stepName(stepName)                                          // ← added
+//                        .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
+//                        .selectedBrand(safe(rs, "selected_brand"))                   // ← added
+//                        .status(defaultIfBlank(safe(rs, "status"), "NEW"))
+//                        .notes(safe(rs, "notes"))
+//                        .createdAt(rs.getTimestamp("created_at") == null
+//                                ? null
+//                                : rs.getTimestamp("created_at").toLocalDateTime())
+//                        .build();
+//            });
+//        } catch (Exception e) {
+//            log.warn("Could not read leads table. Returning empty leads list.", e);
+//            return new ArrayList<>();
+//        }
+//    }
+//
+//    public Map<Integer, Map<String, Long>> findMessageCountsToday() {
+//        String sql = """
+//            SELECT
+//                HOUR(sent_at) AS hour_value,
+//                direction AS direction,
+//                COUNT(*) AS total
+//            FROM messages
+//            WHERE DATE(sent_at) = CURDATE()
+//            AND phone IN (
+//                SELECT DISTINCT phone FROM bot_sessions
+//                WHERE current_step LIKE 'BIRTHDAY_T10_%'
+//                OR current_step LIKE 'BIRTHDAY_TDAY_%'
+//                OR current_step LIKE 'ANNIVERSARY_T10_%'
+//                OR current_step LIKE 'ANNIVERSARY_TDAY_%'
+//            )
+//            GROUP BY HOUR(sent_at), direction
+//            ORDER BY hour_value
+//            """;
+//
+//        Map<Integer, Map<String, Long>> result = new HashMap<>();
+//
+//        try {
+//            jdbcTemplate.query(sql, rs -> {
+//                int hour = rs.getInt("hour_value");
+//                String direction = safe(rs, "direction").toUpperCase();
+//                long total = rs.getLong("total");
+//
+//                result.putIfAbsent(hour, new HashMap<>());
+//                result.get(hour).put(direction, total);
+//            });
+//        } catch (Exception e) {
+//            log.warn("Could not read messages hourly counts. Returning empty hourly data.", e);
+//        }
+//
+//        return result;
+//    }
+//
+//    public List<DashboardResponse.ActivityEventDto> findRecentActivity() {
+//        String sql = """
+//            SELECT
+//                m.phone AS phone,
+//                m.direction AS direction,
+//                m.message_content AS message_content,
+//                m.button_payload AS button_payload,
+//                m.sent_at AS sent_at,
+//                c.name AS customer_name
+//            FROM messages m
+//            LEFT JOIN customers c ON c.phone = m.phone
+//            WHERE m.phone IN (
+//                SELECT DISTINCT phone FROM bot_sessions
+//                WHERE current_step LIKE 'BIRTHDAY_T10_%'
+//                OR current_step LIKE 'BIRTHDAY_TDAY_%'
+//                OR current_step LIKE 'ANNIVERSARY_T10_%'
+//                OR current_step LIKE 'ANNIVERSARY_TDAY_%'
+//            )
+//            AND m.button_payload IS NOT NULL
+//            AND m.button_payload != ''
+//            ORDER BY m.sent_at DESC
+//            LIMIT 10
+//            """;
+//        try {
+//            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+//                String name = defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User");
+//                String direction = safe(rs, "direction");
+//                String payload = safe(rs, "button_payload");
+//                String content = safe(rs, "message_content");
+//
+//                String text = buildActivityText(name, direction, payload, content);
+//
+//                return DashboardResponse.ActivityEventDto.builder()
+//                        .icon(activityIcon(payload, direction))
+//                        .text(text)
+//                        .time(toIso(rs, "sent_at"))
+//                        .bg(activityBg(payload, direction))
+//                        .color(activityColor(payload, direction))
+//                        .build();
+//            });
+//        } catch (Exception e) {
+//            log.warn("Could not read recent activity. Returning empty timeline.", e);
+//            return new ArrayList<>();
+//        }
+//    }
+//
+//
+//
+//
+//    private String buildActivityText(String name, String direction, String payload, String content) {
+//        String p = payload == null ? "" : payload.toUpperCase();
+//
+//        if (p.contains("MENS_COLLECTION")) return name + " selected Men's Collection";
+//        if (p.contains("WOMENS_COLLECTION")) return name + " selected Women's Collection";
+//        if (p.contains("STYLE_BOLD_EDGY")) return name + " selected Bold & Edgy";
+//        if (p.contains("STYLE_MINIMAL_CHIC")) return name + " selected Minimal & Chic";
+//        if (p.contains("STYLE_LUXE_CLASSY")) return name + " selected Luxe & Classy";
+//        if (p.contains("STYLE_SPORTY_ADVENTUROUS")) return name + " selected Sporty & Adventurous";
+//        if (p.contains("PRICE_2K_5K")) return name + " chose ₹2k–₹5k range";
+//        if (p.contains("PRICE_5K_10K")) return name + " chose ₹5k–₹10k range";
+//        if (p.contains("PRICE_10K_25K")) return name + " chose ₹10k–₹25k range";
+//        if (p.contains("PRICE_25K_PLUS")) return name + " chose ₹25k+ range";
+//        if (p.contains("REQUEST_CALLBACK")) return name + " requested a callback";
+//        if (p.contains("BOOK_STORE_VISIT")) return name + " booked a store visit";
+//
+//        if ("INBOUND".equalsIgnoreCase(direction)) {
+//            return name + " sent a message";
+//        }
+//
+//        if ("OUTBOUND".equalsIgnoreCase(direction)) {
+//            return "Bot replied to " + name;
+//        }
+//
+//        return defaultIfBlank(content, name + " had activity");
+//    }
+//
+//    private String activityIcon(String payload, String direction) {
+//        String p = payload == null ? "" : payload.toUpperCase();
+//
+//        if (p.contains("REQUEST_CALLBACK")) return "📞";
+//        if (p.contains("BOOK_STORE_VISIT")) return "🏪";
+//        if (p.contains("PRICE_")) return "💰";
+//        if (p.contains("STYLE_")) return "🎨";
+//        if (p.contains("COLLECTION")) return "👥";
+//        if ("OUTBOUND".equalsIgnoreCase(direction)) return "🤖";
+//
+//        return "💬";
+//    }
+//
+//    private String activityBg(String payload, String direction) {
+//        String p = payload == null ? "" : payload.toUpperCase();
+//
+//        if (p.contains("REQUEST_CALLBACK")) return "#E1F5EE";
+//        if (p.contains("PRICE_")) return "#FEF3CD";
+//        if (p.contains("STYLE_")) return "#EEEDFE";
+//        if ("OUTBOUND".equalsIgnoreCase(direction)) return "#FEF0EB";
+//
+//        return "#EBF4FD";
+//    }
+//
+//    private String activityColor(String payload, String direction) {
+//        String p = payload == null ? "" : payload.toUpperCase();
+//
+//        if (p.contains("REQUEST_CALLBACK")) return "#1D9E75";
+//        if (p.contains("PRICE_")) return "#BA7517";
+//        if (p.contains("STYLE_")) return "#7F77DD";
+//        if ("OUTBOUND".equalsIgnoreCase(direction)) return "#E85A2B";
+//
+//        return "#378ADD";
+//    }
+//
+//    private String extractCollection(String rawStep) {
+//        if (rawStep == null) return null;
+//        String s = rawStep.toUpperCase();
+//
+//        if (s.contains("FEMALE") || s.contains("WOMEN")) return "WOMENS";
+//        if (s.contains("MALE") || s.contains("MEN")) return "MENS";
+//        if (s.contains("COUPLES")) return "COUPLES";
+//
+//        return null;
+//    }
+//
+//    private String extractStyle(String rawStep) {
+//        if (rawStep == null) return null;
+//        String s = rawStep.toUpperCase();
+//
+//        if (s.contains("STYLE_MINIMAL_CHIC")) return "MINIMAL_CHIC";
+//        if (s.contains("STYLE_BOLD_EDGY")) return "BOLD_EDGY";
+//        if (s.contains("STYLE_LUXE_CLASSY")) return "LUXE_CLASSY";
+//        if (s.contains("STYLE_SPORTY_ADVENTUROUS")) return "SPORTY_ADVENTUROUS";
+//
+//        return null;
+//    }
+//
+//    private String mapStep(String rawStep) {
+//        if (rawStep == null || rawStep.isBlank()) return "WELCOME";
+//
+//        String s = rawStep.toUpperCase();
+//
+//        if (s.contains("WELCOME")) return "WELCOME";
+//        if (s.contains("COLLECTION_SELECTION")) return "COLLECTION";
+//        if (s.contains("STYLE_SELECTION") || s.contains("STYLE_SELECTED")) return "STYLE";
+//        if (s.contains("PRODUCT") || s.contains("CAROUSEL")) return "CAROUSEL";
+//        if (s.contains("PRICE_SELECTION") || s.contains("PRICE_FILTER")) return "PRICE_FILTER";
+//        if (s.contains("CALLBACK")) return "CALLBACK";
+//        if (s.contains("BIRTHDAY_OFFERS") || s.contains("BIRTHDAY_OFFER")) return "BIRTHDAY_OFFER";
+//        if (s.contains("COMPLETED")) return "COMPLETED";
+//
+//        return "WELCOME";
+//    }
+//
+//    private String normalizeCollection(String value) {
+//        if (value == null || value.isBlank()) return null;
+//        String s = value.toUpperCase();
+//
+//        if (s.contains("FEMALE") || s.contains("WOMEN")) return "WOMENS";
+//        if (s.contains("MALE") || s.contains("MEN")) return "MENS";
+//        if (s.contains("COUPLES")) return "COUPLES";
+//
+//        return s;
+//    }
+//
+//
+//
+//    private String safe(ResultSet rs, String column) {
+//        try {
+//            String val = rs.getString(column);
+//            return val == null ? "" : val;
+//        } catch (Exception e) {
+//            return "";
+//        }
+//    }
+//
+//    private String toIso(ResultSet rs, String column) {
+//        try {
+//            LocalDateTime dateTime = rs.getTimestamp(column).toLocalDateTime();
+//            return ISO.format(dateTime);
+//        } catch (Exception e) {
+//            return ISO.format(LocalDateTime.now());
+//        }
+//    }
+//
+//    private String defaultIfBlank(String value, String fallback) {
+//        return value == null || value.isBlank() ? fallback : value;
+//    }
+//
+//    // ── Helpers ───────────────────────────────────────────────────
+//    private String flowToPattern(String flow) {
+//        return switch (flow == null ? "" : flow) {
+//            case "bday_t10"  -> "BIRTHDAY_T10_%";
+//            case "bday_t0"   -> "BIRTHDAY_TDAY_%";
+//            case "anniv_t10" -> "ANNIVERSARY_T10_%";
+//            case "anniv_t0"  -> "ANNIVERSARY_TDAY_%";
+//            default          -> "BIRTHDAY_T10_%";
+//        };
+//    }
+//
+//
+//    // ── Flow-wise Sessions ────────────────────────────────────────
+//    public List<DashboardResponse.SessionDto> findSessionsByFlow(String flow) {
+//        String likePattern = flowToPattern(flow);
+//        String sql = """
+//            SELECT
+//                bs.id, bs.phone, bs.current_step, bs.is_active,
+//                bs.last_activity, bs.selected_collection, bs.selected_brand,
+//                c.name AS customer_name
+//            FROM bot_sessions bs
+//            LEFT JOIN customers c ON c.id = bs.customer_id OR c.phone = bs.phone
+//            WHERE bs.current_step LIKE ?
+//            ORDER BY bs.last_activity DESC
+//            LIMIT 500
+//            """;
+//        return jdbcTemplate.query(sql, new Object[]{likePattern},
+//                (rs, rowNum) -> mapSession(rs));
+//    }
+//
+//
+//    // ── Flow-wise Leads ──────────────────────────────────────────
+//    public List<DashboardResponse.LeadDto> findLeadsByFlow(String flow) {
+//        try {
+//            String likePattern = flowToPattern(flow);
+//            String sql = """
+//                SELECT
+//                    l.id,
+//                    COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
+//                    COALESCE(l.phone, c.phone) AS phone,
+//                    l.lead_type, l.flow, l.step_name,
+//                    l.selected_collection, l.selected_brand, l.selected_style,
+//                    l.status, l.notes, l.created_at
+//                FROM leads l
+//                LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+//                WHERE l.flow = ?
+//                   OR l.step_name LIKE ?
+//                ORDER BY l.created_at DESC
+//                LIMIT 500
+//                """;
+//            return jdbcTemplate.query(sql,
+//                    new Object[]{flow, likePattern},
+//                    (rs, rowNum) -> mapLead(rs));
+//        } catch (Exception e) {
+//            log.warn("Could not read leads by flow. Returning empty.", e);
+//            return new ArrayList<>();
+//        }
+//    }
+//    private DashboardResponse.LeadDto mapLead(ResultSet rs) throws Exception {
+//        String flow     = safe(rs, "flow");
+//        String stepName = safe(rs, "step_name");
+//        String resolvedFlow = flow.isBlank() ? detectFlow(stepName) : flow;
+//        return DashboardResponse.LeadDto.builder()
+//                .id(rs.getLong("id"))
+//                .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+//                .phone(safe(rs, "phone"))
+//                .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
+//                .flow(resolvedFlow)
+//                .stepName(stepName)
+//                .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
+//                .selectedBrand(safe(rs, "selected_brand"))
+//                .status(defaultIfBlank(safe(rs, "status"), "NEW"))
+//                .notes(safe(rs, "notes"))
+//                .createdAt(rs.getTimestamp("created_at") == null
+//                        ? null : rs.getTimestamp("created_at").toLocalDateTime())
+//                .build();
+//    }
+//
+//
+//
+//
+//
+//    // ── Flow Counts (Left Menu ke liye) ──────────────────────────
+//    public Map<String, Long> findFlowCounts() {
+//        String sql = """
+//            SELECT
+//                SUM(CASE WHEN current_step LIKE 'BIRTHDAY_T10_%'     THEN 1 ELSE 0 END) AS bday_t10,
+//                SUM(CASE WHEN current_step LIKE 'BIRTHDAY_TDAY_%'    THEN 1 ELSE 0 END) AS bday_t0,
+//                SUM(CASE WHEN current_step LIKE 'ANNIVERSARY_T10_%'  THEN 1 ELSE 0 END) AS anniv_t10,
+//                SUM(CASE WHEN current_step LIKE 'ANNIVERSARY_TDAY_%' THEN 1 ELSE 0 END) AS anniv_t0,
+//                COUNT(*) AS total
+//            FROM bot_sessions
+//            WHERE is_active = 1
+//            """;
+//        try {
+//            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+//                Map<String, Long> counts = new LinkedHashMap<>();
+//                counts.put("bday_t10",  rs.getLong("bday_t10"));
+//                counts.put("bday_t0",   rs.getLong("bday_t0"));
+//                counts.put("anniv_t10", rs.getLong("anniv_t10"));
+//                counts.put("anniv_t0",  rs.getLong("anniv_t0"));
+//                counts.put("total",     rs.getLong("total"));
+//                return counts;
+//            });
+//        } catch (Exception e) {
+//            log.warn("Could not get flow counts.", e);
+//            return new LinkedHashMap<>();
+//        }
+//    }
+//
+//    // ── Active Sessions Count (Left Menu) ────────────────────────
+//    public long countActiveSessions() {
+//        try {
+//            Long count = jdbcTemplate.queryForObject(
+//                    "SELECT COUNT(*) FROM bot_sessions WHERE is_active = 1",
+//                    Long.class);
+//            return count != null ? count : 0L;
+//        } catch (Exception e) {
+//            return 0L;
+//        }
+//    }
+//
+//
+//
+//}
+
+
 package com.example.titan_watch_learning_project.repository;
 
 import com.example.titan_watch_learning_project.dto.DashboardResponse;
@@ -17,150 +524,221 @@ import java.util.*;
 public class DashboardDataRepository {
 
     private final JdbcTemplate jdbcTemplate;
-
     private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-
-
-    private static final String TEMPLATE_FILTER =
-            "('tw_bday_t', 'tw_bday', 'tw_anniv_t', 'tw_anniv')";
-
-    private static final String OUR_TEMPLATE_STEPS =
-            "'BIRTHDAY_T10_%', 'BIRTHDAY_TDAY_%', 'ANNIVERSARY_T10_%', 'ANNIVERSARY_TDAY_%'";
-
+    // ── All Sessions ─────────────────────────────────────────────
     public List<DashboardResponse.SessionDto> findSessions() {
         String sql = """
-        SELECT
-            bs.id            AS id,
-            bs.phone         AS phone,
-            bs.current_step  AS current_step,
-            bs.is_active     AS is_active,
-            bs.last_activity AS last_activity,
-            bs.selected_collection AS selected_collection,
-            bs.selected_brand      AS selected_brand,
-            c.name           AS customer_name
-        FROM bot_sessions bs
-        LEFT JOIN customers c
-            ON c.id = bs.customer_id OR c.phone = bs.phone
-        WHERE (
-            bs.current_step LIKE 'BIRTHDAY_T10_%'
-            OR bs.current_step LIKE 'BIRTHDAY_TDAY_%'
-            OR bs.current_step LIKE 'ANNIVERSARY_T10_%'
-            OR bs.current_step LIKE 'ANNIVERSARY_TDAY_%'
-        )
-        ORDER BY bs.last_activity DESC
-        LIMIT 500
-        """;
-
-
+            SELECT
+                bs.id, bs.phone, bs.current_step, bs.is_active,
+                bs.last_activity, bs.selected_collection, bs.selected_brand,
+                c.name AS customer_name
+            FROM bot_sessions bs
+            LEFT JOIN customers c ON c.id = bs.customer_id OR c.phone = bs.phone
+            WHERE (
+                bs.current_step LIKE 'BIRTHDAY_T10_%'
+                OR bs.current_step LIKE 'BIRTHDAY_TDAY_%'
+                OR bs.current_step LIKE 'ANNIVERSARY_T10_%'
+                OR bs.current_step LIKE 'ANNIVERSARY_TDAY_%'
+            )
+            ORDER BY bs.last_activity DESC
+            """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            String rawStep     = safe(rs, "current_step");
-            String collection  = normalizeCollection(safe(rs, "selected_collection"));
-            String brand       = safe(rs, "selected_brand");
-
-            // collection fallback: try to derive from step name
-            if (collection == null || collection.isBlank()) {
-                collection = extractCollection(rawStep);
+            try {
+                return mapSession(rs);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            return DashboardResponse.SessionDto.builder()
-                    .id(rs.getLong("id"))
-                    .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
-                    .phone(safe(rs, "phone"))
-                    .currentStep(rawStep)      // ← raw step, NOT mapped
-                    .rawStep(rawStep)
-                    .flow(detectFlow(rawStep)) // ← new field
-                    .selectedCollection(collection)
-                    .selectedBrand(defaultIfBlank(brand, null))
-                    .selectedStyle(extractStyle(rawStep))
-                    .isActive(rs.getBoolean("is_active"))
-                    .lastActivity(toIso(rs, "last_activity"))
-                    .build();
         });
     }
 
-    /**
-     * Derives which of the 4 dashboard flows a step belongs to.
-     * Returns one of: bday_t10 | bday_t0 | anniv_t10 | anniv_t0 | unknown
-     */
-    private String detectFlow(String rawStep) {
-        if (rawStep == null || rawStep.isBlank()) return "bday_t10";
-        String s = rawStep.toUpperCase();
-
-        if (s.startsWith("BIRTHDAY_T10_"))    return "bday_t10";
-        if (s.startsWith("BIRTHDAY_TDAY_"))   return "bday_t0";
-        if (s.startsWith("ANNIVERSARY_T10_")) return "anniv_t10";
-        if (s.startsWith("ANNIVERSARY_TDAY_"))return "anniv_t0";
-
-        // Legacy step names — map to bday_t10 as default
-        return "bday_t10";
+    // ── Flow-wise Sessions ────────────────────────────────────────
+    public List<DashboardResponse.SessionDto> findSessionsByFlow(String flow) {
+        String likePattern = flowToPattern(flow);
+        String sql = """
+            SELECT
+                bs.id, bs.phone, bs.current_step, bs.is_active,
+                bs.last_activity, bs.selected_collection, bs.selected_brand,
+                c.name AS customer_name
+            FROM bot_sessions bs
+            LEFT JOIN customers c ON c.id = bs.customer_id OR c.phone = bs.phone
+            WHERE bs.current_step LIKE ?
+            ORDER BY bs.last_activity DESC
+            """;
+        return jdbcTemplate.query(sql, new Object[]{likePattern},
+                (rs, rowNum) -> {
+                    try {
+                        return mapSession(rs);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
+    // ── All Leads ────────────────────────────────────────────────
     public List<DashboardResponse.LeadDto> findLeads() {
         try {
             String sql = """
-            SELECT
-                l.id                  AS id,
-                COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
-                COALESCE(l.phone, c.phone)    AS phone,
-                l.lead_type           AS lead_type,
-                l.flow                AS flow,
-                l.step_name           AS step_name,
-                l.selected_collection AS selected_collection,
-                l.selected_brand      AS selected_brand,
-                l.selected_style      AS selected_style,
-                l.status              AS status,
-                l.notes               AS notes,
-                l.created_at          AS created_at
-            FROM leads l
-            LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
-            WHERE (
-                l.flow IN ('bday_t10', 'bday_t0', 'anniv_t10', 'anniv_t0')
-                OR l.step_name LIKE 'BIRTHDAY_T10_%'
-                OR l.step_name LIKE 'BIRTHDAY_TDAY_%'
-                OR l.step_name LIKE 'ANNIVERSARY_T10_%'
-                OR l.step_name LIKE 'ANNIVERSARY_TDAY_%'
-            )
-            ORDER BY l.created_at DESC
-            LIMIT 500
-            """;
-
+                SELECT
+                    l.id,
+                    COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
+                    COALESCE(l.phone, c.phone) AS phone,
+                    l.lead_type, l.flow, l.step_name,
+                    l.selected_collection, l.selected_brand, l.selected_style,
+                    l.status, l.notes, l.created_at
+                FROM leads l
+                LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+                WHERE (
+                    l.flow IN ('bday_t10', 'bday_t0', 'anniv_t10', 'anniv_t0')
+                    OR l.step_name LIKE 'BIRTHDAY_T10_%'
+                    OR l.step_name LIKE 'BIRTHDAY_TDAY_%'
+                    OR l.step_name LIKE 'ANNIVERSARY_T10_%'
+                    OR l.step_name LIKE 'ANNIVERSARY_TDAY_%'
+                )
+                ORDER BY l.created_at DESC
+                """;
             return jdbcTemplate.query(sql, (rs, rowNum) -> {
-                // flow NULL hai to step_name se detect karo
-                String flow     = safe(rs, "flow");
-                String stepName = safe(rs, "step_name");
-                String resolvedFlow = flow.isBlank()
-                        ? detectFlow(stepName)   // ← purane leads ke liye fallback
-                        : flow;
-
-                return DashboardResponse.LeadDto.builder()
-                        .id(rs.getLong("id"))
-                        .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
-                        .phone(safe(rs, "phone"))
-                        .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
-                        .flow(resolvedFlow)                                          // ← fixed
-                        .stepName(stepName)                                          // ← added
-                        .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
-                        .selectedBrand(safe(rs, "selected_brand"))                   // ← added
-                        .status(defaultIfBlank(safe(rs, "status"), "NEW"))
-                        .notes(safe(rs, "notes"))
-                        .createdAt(rs.getTimestamp("created_at") == null
-                                ? null
-                                : rs.getTimestamp("created_at").toLocalDateTime())
-                        .build();
+                try {
+                    return mapLead(rs);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             });
         } catch (Exception e) {
-            log.warn("Could not read leads table. Returning empty leads list.", e);
+            log.warn("Could not read leads table. Returning empty.", e);
             return new ArrayList<>();
         }
     }
 
+    // ── Flow-wise Leads ──────────────────────────────────────────
+    public List<DashboardResponse.LeadDto> findLeadsByFlow(String flow) {
+        try {
+            String likePattern = flowToPattern(flow);
+            String sql = """
+                SELECT
+                    l.id,
+                    COALESCE(l.customer_name, c.name, 'WhatsApp User') AS customer_name,
+                    COALESCE(l.phone, c.phone) AS phone,
+                    l.lead_type, l.flow, l.step_name,
+                    l.selected_collection, l.selected_brand, l.selected_style,
+                    l.status, l.notes, l.created_at
+                FROM leads l
+                LEFT JOIN customers c ON c.id = l.customer_id OR c.phone = l.phone
+                WHERE l.flow = ?
+                   OR l.step_name LIKE ?
+                ORDER BY l.created_at DESC
+                """;
+            return jdbcTemplate.query(sql,
+                    new Object[]{flow, likePattern},
+                    (rs, rowNum) -> {
+                        try {
+                            return mapLead(rs);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        } catch (Exception e) {
+            log.warn("Could not read leads by flow. Returning empty.", e);
+            return new ArrayList<>();
+        }
+    }
+
+    // ── Flow Counts (Left Menu ke liye) ──────────────────────────
+    public Map<String, Long> findFlowCounts() {
+        String sql = """
+            SELECT
+                SUM(CASE WHEN current_step LIKE 'BIRTHDAY_T10_%'     THEN 1 ELSE 0 END) AS bday_t10,
+                SUM(CASE WHEN current_step LIKE 'BIRTHDAY_TDAY_%'    THEN 1 ELSE 0 END) AS bday_t0,
+                SUM(CASE WHEN current_step LIKE 'ANNIVERSARY_T10_%'  THEN 1 ELSE 0 END) AS anniv_t10,
+                SUM(CASE WHEN current_step LIKE 'ANNIVERSARY_TDAY_%' THEN 1 ELSE 0 END) AS anniv_t0,
+                COUNT(*) AS total
+            FROM bot_sessions
+            WHERE is_active = 1
+            """;
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                Map<String, Long> counts = new LinkedHashMap<>();
+                counts.put("bday_t10",  rs.getLong("bday_t10"));
+                counts.put("bday_t0",   rs.getLong("bday_t0"));
+                counts.put("anniv_t10", rs.getLong("anniv_t10"));
+                counts.put("anniv_t0",  rs.getLong("anniv_t0"));
+                counts.put("total",     rs.getLong("total"));
+                return counts;
+            });
+        } catch (Exception e) {
+            log.warn("Could not get flow counts.", e);
+            return new LinkedHashMap<>();
+        }
+    }
+
+    // ── Active Sessions Count (Left Menu) ────────────────────────
+    public long countActiveSessions() {
+        try {
+            Long count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM bot_sessions WHERE is_active = 1",
+                    Long.class);
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
+
+    // ── Activity Feed (Flow filtered) ────────────────────────────
+    public List<DashboardResponse.ActivityEventDto> findRecentActivity() {
+        return findRecentActivityByFlow(null);
+    }
+
+    public List<DashboardResponse.ActivityEventDto> findRecentActivityByFlow(String flow) {
+        String stepFilter = flow != null
+                ? "bs.current_step LIKE '" + flowToPattern(flow) + "'"
+                : """
+              (bs.current_step LIKE 'BIRTHDAY_T10_%'
+               OR bs.current_step LIKE 'BIRTHDAY_TDAY_%'
+               OR bs.current_step LIKE 'ANNIVERSARY_T10_%'
+               OR bs.current_step LIKE 'ANNIVERSARY_TDAY_%')
+              """;
+
+        String sql = """
+            SELECT
+                m.phone, m.direction, m.message_content,
+                m.button_payload, m.sent_at,
+                c.name AS customer_name
+            FROM messages m
+            LEFT JOIN customers c ON c.phone = m.phone
+            WHERE m.phone IN (
+                SELECT DISTINCT bs.phone FROM bot_sessions bs
+                WHERE """ + stepFilter + """
+            )
+            AND m.button_payload IS NOT NULL
+            AND m.button_payload != ''
+            ORDER BY m.sent_at DESC
+            LIMIT 10
+            """;
+
+        try {
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                String name      = defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User");
+                String direction = safe(rs, "direction");
+                String payload   = safe(rs, "button_payload");
+                String content   = safe(rs, "message_content");
+                return DashboardResponse.ActivityEventDto.builder()
+                        .icon(activityIcon(payload, direction))
+                        .text(buildActivityText(name, direction, payload, content))
+                        .time(toIso(rs, "sent_at"))
+                        .bg(activityBg(payload, direction))
+                        .color(activityColor(payload, direction))
+                        .build();
+            });
+        } catch (Exception e) {
+            log.warn("Could not read activity.", e);
+            return new ArrayList<>();
+        }
+    }
+
+    // ── Hourly Messages ──────────────────────────────────────────
     public Map<Integer, Map<String, Long>> findMessageCountsToday() {
         String sql = """
-            SELECT 
-                HOUR(sent_at) AS hour_value,
-                direction AS direction,
-                COUNT(*) AS total
+            SELECT HOUR(sent_at) AS hour_value, direction, COUNT(*) AS total
             FROM messages
             WHERE DATE(sent_at) = CURDATE()
             AND phone IN (
@@ -173,188 +751,159 @@ public class DashboardDataRepository {
             GROUP BY HOUR(sent_at), direction
             ORDER BY hour_value
             """;
-
         Map<Integer, Map<String, Long>> result = new HashMap<>();
-
         try {
             jdbcTemplate.query(sql, rs -> {
                 int hour = rs.getInt("hour_value");
-                String direction = safe(rs, "direction").toUpperCase();
+                String dir = safe(rs, "direction").toUpperCase();
                 long total = rs.getLong("total");
-
                 result.putIfAbsent(hour, new HashMap<>());
-                result.get(hour).put(direction, total);
+                result.get(hour).put(dir, total);
             });
         } catch (Exception e) {
-            log.warn("Could not read messages hourly counts. Returning empty hourly data.", e);
+            log.warn("Could not read hourly counts.", e);
         }
-
         return result;
     }
 
-    public List<DashboardResponse.ActivityEventDto> findRecentActivity() {
-        String sql = """
-            SELECT 
-                m.phone AS phone,
-                m.direction AS direction,
-                m.message_content AS message_content,
-                m.button_payload AS button_payload,
-                m.sent_at AS sent_at,
-                c.name AS customer_name
-            FROM messages m
-            LEFT JOIN customers c ON c.phone = m.phone
-            WHERE m.phone IN (
-                SELECT DISTINCT phone FROM bot_sessions
-                WHERE current_step LIKE 'BIRTHDAY_T10_%'
-                OR current_step LIKE 'BIRTHDAY_TDAY_%'
-                OR current_step LIKE 'ANNIVERSARY_T10_%'
-                OR current_step LIKE 'ANNIVERSARY_TDAY_%'
-            )
-            AND m.button_payload IS NOT NULL
-            AND m.button_payload != ''
-            ORDER BY m.sent_at DESC
-            LIMIT 10
-            """;
-        try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> {
-                String name = defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User");
-                String direction = safe(rs, "direction");
-                String payload = safe(rs, "button_payload");
-                String content = safe(rs, "message_content");
-
-                String text = buildActivityText(name, direction, payload, content);
-
-                return DashboardResponse.ActivityEventDto.builder()
-                        .icon(activityIcon(payload, direction))
-                        .text(text)
-                        .time(toIso(rs, "sent_at"))
-                        .bg(activityBg(payload, direction))
-                        .color(activityColor(payload, direction))
-                        .build();
-            });
-        } catch (Exception e) {
-            log.warn("Could not read recent activity. Returning empty timeline.", e);
-            return new ArrayList<>();
-        }
+    // ── Helpers ───────────────────────────────────────────────────
+    private String flowToPattern(String flow) {
+        return switch (flow == null ? "" : flow) {
+            case "bday_t10"  -> "BIRTHDAY_T10_%";
+            case "bday_t0"   -> "BIRTHDAY_TDAY_%";
+            case "anniv_t10" -> "ANNIVERSARY_T10_%";
+            case "anniv_t0"  -> "ANNIVERSARY_TDAY_%";
+            default          -> "BIRTHDAY_T10_%";
+        };
     }
 
+    private DashboardResponse.SessionDto mapSession(ResultSet rs) throws Exception {
+        String rawStep    = safe(rs, "current_step");
+        String collection = normalizeCollection(safe(rs, "selected_collection"));
+        String brand      = safe(rs, "selected_brand");
+        if (collection == null || collection.isBlank()) {
+            collection = extractCollection(rawStep);
+        }
+        return DashboardResponse.SessionDto.builder()
+                .id(rs.getLong("id"))
+                .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+                .phone(safe(rs, "phone"))
+                .currentStep(rawStep)
+                .rawStep(rawStep)
+                .flow(detectFlow(rawStep))
+                .selectedCollection(collection)
+                .selectedBrand(defaultIfBlank(brand, null))
+                .selectedStyle(extractStyle(rawStep))
+                .isActive(rs.getBoolean("is_active"))
+                .lastActivity(toIso(rs, "last_activity"))
+                .build();
+    }
 
+    private DashboardResponse.LeadDto mapLead(ResultSet rs) throws Exception {
+        String flow     = safe(rs, "flow");
+        String stepName = safe(rs, "step_name");
+        String resolvedFlow = flow.isBlank() ? detectFlow(stepName) : flow;
+        return DashboardResponse.LeadDto.builder()
+                .id(rs.getLong("id"))
+                .customerName(defaultIfBlank(safe(rs, "customer_name"), "WhatsApp User"))
+                .phone(safe(rs, "phone"))
+                .leadType(defaultIfBlank(safe(rs, "lead_type"), "CALLBACK"))
+                .flow(resolvedFlow)
+                .stepName(stepName)
+                .selectedCollection(normalizeCollection(safe(rs, "selected_collection")))
+                .selectedBrand(safe(rs, "selected_brand"))
+                .status(defaultIfBlank(safe(rs, "status"), "NEW"))
+                .notes(safe(rs, "notes"))
+                .createdAt(rs.getTimestamp("created_at") == null
+                        ? null : rs.getTimestamp("created_at").toLocalDateTime())
+                .build();
+    }
 
+    private String detectFlow(String rawStep) {
+        if (rawStep == null || rawStep.isBlank()) return "bday_t10";
+        String s = rawStep.toUpperCase();
+        if (s.startsWith("BIRTHDAY_T10_"))     return "bday_t10";
+        if (s.startsWith("BIRTHDAY_TDAY_"))    return "bday_t0";
+        if (s.startsWith("ANNIVERSARY_T10_"))  return "anniv_t10";
+        if (s.startsWith("ANNIVERSARY_TDAY_")) return "anniv_t0";
+        return "bday_t10";
+    }
 
     private String buildActivityText(String name, String direction, String payload, String content) {
         String p = payload == null ? "" : payload.toUpperCase();
-
-        if (p.contains("MENS_COLLECTION")) return name + " selected Men's Collection";
-        if (p.contains("WOMENS_COLLECTION")) return name + " selected Women's Collection";
-        if (p.contains("STYLE_BOLD_EDGY")) return name + " selected Bold & Edgy";
-        if (p.contains("STYLE_MINIMAL_CHIC")) return name + " selected Minimal & Chic";
-        if (p.contains("STYLE_LUXE_CLASSY")) return name + " selected Luxe & Classy";
+        if (p.contains("MENS_COLLECTION"))         return name + " selected Men's Collection";
+        if (p.contains("WOMENS_COLLECTION"))        return name + " selected Women's Collection";
+        if (p.contains("STYLE_BOLD_EDGY"))          return name + " selected Bold & Edgy";
+        if (p.contains("STYLE_MINIMAL_CHIC"))       return name + " selected Minimal & Chic";
+        if (p.contains("STYLE_LUXE_CLASSY"))        return name + " selected Luxe & Classy";
         if (p.contains("STYLE_SPORTY_ADVENTUROUS")) return name + " selected Sporty & Adventurous";
-        if (p.contains("PRICE_2K_5K")) return name + " chose ₹2k–₹5k range";
-        if (p.contains("PRICE_5K_10K")) return name + " chose ₹5k–₹10k range";
-        if (p.contains("PRICE_10K_25K")) return name + " chose ₹10k–₹25k range";
-        if (p.contains("PRICE_25K_PLUS")) return name + " chose ₹25k+ range";
-        if (p.contains("REQUEST_CALLBACK")) return name + " requested a callback";
-        if (p.contains("BOOK_STORE_VISIT")) return name + " booked a store visit";
-
-        if ("INBOUND".equalsIgnoreCase(direction)) {
-            return name + " sent a message";
-        }
-
-        if ("OUTBOUND".equalsIgnoreCase(direction)) {
-            return "Bot replied to " + name;
-        }
-
+        if (p.contains("PRICE_2K_5K"))              return name + " chose ₹2k–₹5k range";
+        if (p.contains("PRICE_5K_10K"))             return name + " chose ₹5k–₹10k range";
+        if (p.contains("PRICE_10K_25K"))            return name + " chose ₹10k–₹25k range";
+        if (p.contains("PRICE_25K_PLUS"))           return name + " chose ₹25k+ range";
+        if (p.contains("REQUEST_CALLBACK"))         return name + " requested a callback";
+        if (p.contains("BOOK_STORE_VISIT"))         return name + " booked a store visit";
+        if ("INBOUND".equalsIgnoreCase(direction))  return name + " sent a message";
+        if ("OUTBOUND".equalsIgnoreCase(direction)) return "Bot replied to " + name;
         return defaultIfBlank(content, name + " had activity");
     }
 
     private String activityIcon(String payload, String direction) {
         String p = payload == null ? "" : payload.toUpperCase();
-
         if (p.contains("REQUEST_CALLBACK")) return "📞";
         if (p.contains("BOOK_STORE_VISIT")) return "🏪";
-        if (p.contains("PRICE_")) return "💰";
-        if (p.contains("STYLE_")) return "🎨";
-        if (p.contains("COLLECTION")) return "👥";
+        if (p.contains("PRICE_"))           return "💰";
+        if (p.contains("STYLE_"))           return "🎨";
+        if (p.contains("COLLECTION"))       return "👥";
         if ("OUTBOUND".equalsIgnoreCase(direction)) return "🤖";
-
         return "💬";
     }
 
     private String activityBg(String payload, String direction) {
         String p = payload == null ? "" : payload.toUpperCase();
-
         if (p.contains("REQUEST_CALLBACK")) return "#E1F5EE";
-        if (p.contains("PRICE_")) return "#FEF3CD";
-        if (p.contains("STYLE_")) return "#EEEDFE";
+        if (p.contains("PRICE_"))           return "#FEF3CD";
+        if (p.contains("STYLE_"))           return "#EEEDFE";
         if ("OUTBOUND".equalsIgnoreCase(direction)) return "#FEF0EB";
-
         return "#EBF4FD";
     }
 
     private String activityColor(String payload, String direction) {
         String p = payload == null ? "" : payload.toUpperCase();
-
         if (p.contains("REQUEST_CALLBACK")) return "#1D9E75";
-        if (p.contains("PRICE_")) return "#BA7517";
-        if (p.contains("STYLE_")) return "#7F77DD";
+        if (p.contains("PRICE_"))           return "#BA7517";
+        if (p.contains("STYLE_"))           return "#7F77DD";
         if ("OUTBOUND".equalsIgnoreCase(direction)) return "#E85A2B";
-
         return "#378ADD";
     }
 
     private String extractCollection(String rawStep) {
         if (rawStep == null) return null;
         String s = rawStep.toUpperCase();
-
         if (s.contains("FEMALE") || s.contains("WOMEN")) return "WOMENS";
-        if (s.contains("MALE") || s.contains("MEN")) return "MENS";
-        if (s.contains("COUPLES")) return "COUPLES";
-
+        if (s.contains("MALE")   || s.contains("MEN"))   return "MENS";
+        if (s.contains("COUPLES"))                        return "COUPLES";
         return null;
     }
 
     private String extractStyle(String rawStep) {
         if (rawStep == null) return null;
         String s = rawStep.toUpperCase();
-
-        if (s.contains("STYLE_MINIMAL_CHIC")) return "MINIMAL_CHIC";
-        if (s.contains("STYLE_BOLD_EDGY")) return "BOLD_EDGY";
-        if (s.contains("STYLE_LUXE_CLASSY")) return "LUXE_CLASSY";
-        if (s.contains("STYLE_SPORTY_ADVENTUROUS")) return "SPORTY_ADVENTUROUS";
-
+        if (s.contains("STYLE_MINIMAL_CHIC"))        return "MINIMAL_CHIC";
+        if (s.contains("STYLE_BOLD_EDGY"))           return "BOLD_EDGY";
+        if (s.contains("STYLE_LUXE_CLASSY"))         return "LUXE_CLASSY";
+        if (s.contains("STYLE_SPORTY_ADVENTUROUS"))  return "SPORTY_ADVENTUROUS";
         return null;
-    }
-
-    private String mapStep(String rawStep) {
-        if (rawStep == null || rawStep.isBlank()) return "WELCOME";
-
-        String s = rawStep.toUpperCase();
-
-        if (s.contains("WELCOME")) return "WELCOME";
-        if (s.contains("COLLECTION_SELECTION")) return "COLLECTION";
-        if (s.contains("STYLE_SELECTION") || s.contains("STYLE_SELECTED")) return "STYLE";
-        if (s.contains("PRODUCT") || s.contains("CAROUSEL")) return "CAROUSEL";
-        if (s.contains("PRICE_SELECTION") || s.contains("PRICE_FILTER")) return "PRICE_FILTER";
-        if (s.contains("CALLBACK")) return "CALLBACK";
-        if (s.contains("BIRTHDAY_OFFERS") || s.contains("BIRTHDAY_OFFER")) return "BIRTHDAY_OFFER";
-        if (s.contains("COMPLETED")) return "COMPLETED";
-
-        return "WELCOME";
     }
 
     private String normalizeCollection(String value) {
         if (value == null || value.isBlank()) return null;
         String s = value.toUpperCase();
-
         if (s.contains("FEMALE") || s.contains("WOMEN")) return "WOMENS";
-        if (s.contains("MALE") || s.contains("MEN")) return "MENS";
-        if (s.contains("COUPLES")) return "COUPLES";
-
+        if (s.contains("MALE")   || s.contains("MEN"))   return "MENS";
+        if (s.contains("COUPLES"))                        return "COUPLES";
         return s;
     }
-
-
 
     private String safe(ResultSet rs, String column) {
         try {
@@ -367,8 +916,7 @@ public class DashboardDataRepository {
 
     private String toIso(ResultSet rs, String column) {
         try {
-            LocalDateTime dateTime = rs.getTimestamp(column).toLocalDateTime();
-            return ISO.format(dateTime);
+            return ISO.format(rs.getTimestamp(column).toLocalDateTime());
         } catch (Exception e) {
             return ISO.format(LocalDateTime.now());
         }
@@ -377,10 +925,4 @@ public class DashboardDataRepository {
     private String defaultIfBlank(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
     }
-
-
-
-
-
-
 }
