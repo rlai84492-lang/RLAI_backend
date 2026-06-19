@@ -3,13 +3,18 @@
 package com.example.titan_watch_learning_project.serviceImpl;
 
 import com.example.titan_watch_learning_project.entity.Customer;
+import com.example.titan_watch_learning_project.entity.Message;
 import com.example.titan_watch_learning_project.repository.BotSessionRepository;
 import com.example.titan_watch_learning_project.repository.CustomerRepository;
+import com.example.titan_watch_learning_project.repository.MessageRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -21,7 +26,10 @@ public class WebhookServiceImpl {
     private final BotEngineServiceImpl botEngineService;
 
 
+
     private final BotSessionRepository botSessionRepository;
+
+    private  final MessageRepository messageRepository;
 
 
 
@@ -291,6 +299,9 @@ public class WebhookServiceImpl {
         log.info("Delivery event: to={} status={} reason={} code={} mid={} templateId={}",
                 to, status, reason, code, mid, templateId);
 
+        // ── YE NAYA BLOCK ADD KARO — Outbound message save/update karo ──
+        saveOrUpdateOutboundMessage(to, mid, status, templateId);
+
         // ── AUTO SESSION FROM TEMPLATE ────────────────────────────
         // Jab template delivered ya sent hua
         // → Session auto-create karo agar exist nahi karta
@@ -311,6 +322,80 @@ public class WebhookServiceImpl {
         }
         // ─────────────────────────────────────────────────────────
     }
+
+    // ── NAYA METHOD — messages table mein outbound entry save/update ──
+// ── NAYA METHOD — outbound message save ya status update ──────────
+    private void saveOrUpdateOutboundMessage(String phone, String mid, String karixStatus, String templateId) {
+        try {
+            if (phone.isBlank() || mid.isBlank()) {
+                log.warn("Skipping message save — phone or mid blank. phone={} mid={}", phone, mid);
+                return;
+            }
+
+            // Karix status string → entity enum mein map karo
+            Message.Status mappedStatus = mapKarixStatus(karixStatus);
+            if (mappedStatus == null) {
+                log.warn("Unknown Karix status '{}' — skipping save for mid={}", karixStatus, mid);
+                return;
+            }
+
+            Optional<Message> existing = messageRepository.findByMid(mid);
+
+            if (existing.isPresent()) {
+                // ── Already row hai (pehle SENT save hua tha) → status update karo ──
+                Message msg = existing.get();
+                msg.setStatus(mappedStatus);
+
+                if (mappedStatus == Message.Status.DELIVERED) {
+                    msg.setDeliveredAt(LocalDateTime.now());
+                } else if (mappedStatus == Message.Status.READ) {
+                    msg.setReadAt(LocalDateTime.now());
+                }
+
+                messageRepository.save(msg);
+                log.info("Updated outbound message mid={} status={}", mid, mappedStatus);
+
+            } else {
+                // ── Pehli baar (SENT event) → naya row banao ──
+                Message msg = Message.builder()
+                        .phone(phone)
+                        .mid(mid)
+                        .direction(Message.Direction.OUTBOUND)
+                        .status(mappedStatus)
+                        .messageType(Message.MessageType.TEMPLATE)
+                        .messageContent(templateId)
+                        .stepName(templateId)
+                        .sentAt(LocalDateTime.now())
+                        .build();
+
+                if (mappedStatus == Message.Status.DELIVERED) {
+                    msg.setDeliveredAt(LocalDateTime.now());
+                }
+
+                messageRepository.save(msg);
+                log.info("Created outbound message mid={} status={} templateId={}",
+                        mid, mappedStatus, templateId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to save/update outbound message phone={} mid={}", phone, mid, e);
+        }
+    }
+
+
+    // ── Karix ka lowercase status string → Message.Status enum ────────
+    private Message.Status mapKarixStatus(String karixStatus) {
+        if (karixStatus == null) return null;
+        return switch (karixStatus.toLowerCase()) {
+            case "sent", "submitted to channel" -> Message.Status.SENT;
+            case "delivered" -> Message.Status.DELIVERED;
+            case "read"      -> Message.Status.READ;
+            case "failed"    -> Message.Status.FAILED;
+            case "queued"    -> Message.Status.SENT; // Queued ko bhi SENT treat karo
+            default          -> null;
+        };
+    }
+
+
 
     private void autoCreateSessionIfNeeded(String phone, String step, String templateId) {
         try {
