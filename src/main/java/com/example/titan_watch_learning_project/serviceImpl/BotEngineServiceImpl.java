@@ -923,320 +923,277 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
     }
 
 
-//    private boolean handleBirthdayT10Flow(
-//            String phone,
-//            BotSession session,
-//            String firstName,
-//            String cleanPayload
-//    ) {
-//        String currentStep = safeStep(session);
-//
-//        if (isBirthdayT10MonthConfirmationStep(currentStep)) {
-//            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_YES", "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT", "YES" )) {
-//                sendBirthdayT10Opener(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_NO", "NO_THAT_S_NOT_RIGHT", "NO_THATS_NOT_RIGHT", "NO_NOT_RIGHT", "NO" )) {
-//
-//                sendBirthdayT10DobCorrectionAsk(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_DOB_PENDING);
-//                return true;
-//            }
-//        }
-//
-//
-//        if (isBirthdayT10BridgeStep(currentStep)) {
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_YES_SHOW_ME", "YES_SHOW_ME", "SHOW_ME")) {
-//                sendBirthdayT10Opener(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_MAYBE_LATER", "NO_MAYBE_LATER", "MAYBE_LATER")) {
-//                sendBirthdayT10GracefulExit(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload, "NO_MAYBE_LATER", "MAYBE_LATER")) {
-//                sendBirthdayT10GracefulExit(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
-//                return true;
-//            }
-//        }
-//
-//        if (isBirthdayT10OpenerStep(currentStep)) {
-//            if (isPayload(cleanPayload, "FIND_MY_PERFECT_WATCH", "FIND_PERFECT_WATCH", "FIND_BIRTHDAY_WATCH", "FIND_WATCH", "FIND_MY_WATCH", "FIND_MY_BIRTHDAY_WATCH")) {
-//                sendBirthdayT10GenderSelection(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload, "SEE_BIRTHDAY_OFFERS", "BIRTHDAY_OFFERS", "EXCLUSIVE_BIRTHDAY_OFFERS")) {
-//                sendBirthdayT10Offer(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_T10_OFFER_SENT);
-//                return true;
-//            }
-//
-//
-//            if (isStep(currentStep, STEP_BIRTHDAY_T10_STORE_VISIT_SENT, "STORE_VISIT_SENT")) {
-//
-//                if (isPayload(cleanPayload,
-//                        "BIRTHDAY_T10_BOOK_APPOINTMENT",
-//                        "BOOK_AN_APPOINTMENT")) {
-//
-//                    sendBirthdayT10CallbackConfirmation(phone);
-//                    saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        if (isBirthdayT10GenderSelectionStep(currentStep)) {
-//            if (isMensCollectionPayload(cleanPayload)) {
-//                return sendBirthdayT10BrandCarousel(phone, session, firstName, "MEN");
-//            }
-//
-//            if (isWomensCollectionPayload(cleanPayload)) {
-//                return sendBirthdayT10BrandCarousel(phone, session, firstName, "WOMEN");
-//            }
-//        }
-//
-//        if (isBirthdayT10BrandCarouselStep(currentStep)) {
-//            if (isExploreCarouselPayload(cleanPayload)) {
-//                return handleBirthdayT10ExploreCollection(phone, session, firstName, cleanPayload);
-//            }
-//
-//            if (isCallbackCarouselPayload(cleanPayload)) {
-//                return handleBirthdayT10CarouselCallback(phone, session, firstName,cleanPayload);
-//            }
-//        }
-//
-//
-//                        if (isBirthdayT10CatalogueOrOfferStep(currentStep)) {
-//                            if (isPayload(cleanPayload,
-//                                    "BIRTHDAY_T10_OFFER_BOOK_STORE",
-//                                    "BIRTHDAY_T10_CATALOGUE_VISIT_STORE")
-//                                    || isStoreVisitPayload(cleanPayload)) {
-//
-//                                saveLead(
-//                                        phone,
-//                                        session.getCustomerId(),
-//                                        firstName,
-//                                        session,
-//                                        Lead.LeadType.STORE_VISIT,
-//                                        "Birthday T-10 store visit requested"
-//                                );
-//
-//                                sendBirthdayT10StoreVisit(phone);
-//                                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-//                                return true;
-//                            }
-//
-//            // Offer path Request callback
-//            // Catalogue follow-up Request callback
-//            // Dono case me direct Done + Explore again aana chahiye.
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_T10_OFFER_CALLBACK",
-//                    "BIRTHDAY_T10_CATALOGUE_CALLBACK")
-//                    || isCallbackPayload(cleanPayload)) {
-//
-//
-//                saveLead(
-//                        phone,
-//                        session.getCustomerId(),
-//                        firstName,
-//                        session,
-//                        Lead.LeadType.CALLBACK,
-//                        "Birthday T-10 callback requested"
-//                );
-//
-//                sendBirthdayT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//        }
-//
-//
-//        if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
-//            if (isBirthdayT10AnyStep(currentStep)) {
-//                sendBirthdayT10GenderSelection(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//        }
-//
-//
-//        // Safety fallback for old Birthday T-10 messages already sent on WhatsApp.
-//// Agar user old upper button click kare, welcome flow me mat bhejo.
-//        if (isBirthdayT10AnyStep(currentStep)) {
-//
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_BOOK_STORE", "BIRTHDAY_T10_VISIT_STORE")
-//                    || isStoreVisitPayload(cleanPayload)) {
-//
-//                sendBirthdayT10StoreVisit(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_CATALOGUE_CALLBACK")) {
-//
-//                sendBirthdayT10StoreHelp(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_OFFER_CALLBACK", "BIRTHDAY_T10_BOOK_APPOINTMENT")
-//                    || isCallbackPayload(cleanPayload)) {
-//
-//                sendBirthdayT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
-//
-//                sendBirthdayT10GenderSelection(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//        }
-//
-//
-//        // ----------------------------------------------------
-//// Birthday T-10 stale old buttons safety
-//// User agar neeche aane ke baad upar wala old button click kare,
-//// toh bhi expected response hi aana chahiye.
-//// ----------------------------------------------------
-//        if (isBirthdayT10AnyStep(currentStep)) {
-//
-//            // Old/new Book store visit / Visit nearest store
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_T10_OFFER_BOOK_STORE",
-//                    "BIRTHDAY_T10_BOOK_STORE",
-//                    "BIRTHDAY_T10_CATALOGUE_VISIT_STORE",
-//                    "BIRTHDAY_T10_VISIT_STORE",
-//                    "VISIT_NEAREST_STORE",
-//                    "BOOK_STORE_VISIT",
-//                    "VISIT_STORE",
-//                    "NEARBY_STORE",
-//                    "PICK_UP_STORE",
-//                    "STORE_VISIT",
-//                    "FIND_STORE_NEAR_ME")
-//                    || (cleanPayload != null && cleanPayload.startsWith("BOOK_STORE_VISIT_"))) {
-//
-//                sendBirthdayT10StoreVisit(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-//                return true;
-//            }
-//
-//            // Old/new Request callback
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_T10_OFFER_CALLBACK",
-//                    "BIRTHDAY_T10_CATALOGUE_CALLBACK",
-//                    "REQUEST_CALLBACK",
-//                    "REQUEST_A_CALLBACK",
-//                    "INTERESTED",
-//                    "SPEAK_WITH_EXPERT")
-//                    || (cleanPayload != null && cleanPayload.startsWith("REQUEST_CALLBACK_"))) {
-//
-//                sendBirthdayT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//
-//            // Old/new Book appointment
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_T10_BOOK_APPOINTMENT",
-//                    "BOOK_AN_APPOINTMENT")) {
-//
-//                sendBirthdayT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_EXPLORE_AGAIN",
-//                    "EXPLORE_AGAIN",
-//                    "BROWSE_AGAIN")) {
-//
-//                if (isAnniversaryT10AnyStep(currentStep)) {
-//                    sendAnniversaryT10GenderSelection(phone);
-//                    saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
+    private boolean handleBirthdayT10Flow(
+            String phone,
+            BotSession session,
+            String firstName,
+            String cleanPayload
+    ) {
+        String currentStep = safeStep(session);
 
+        if (isBirthdayT10MonthConfirmationStep(currentStep)) {
+            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_YES", "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT", "YES" )) {
+                sendBirthdayT10Opener(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload, "BIRTHDAY_MONTH_NO", "NO_THAT_S_NOT_RIGHT", "NO_THATS_NOT_RIGHT", "NO_NOT_RIGHT", "NO" )) {
 
-private boolean handleBirthdayT10Flow(
-        String phone,
-        BotSession session,
-        String firstName,
-        String cleanPayload
-) {
-    String currentStep = safeStep(session);
-
-    if (isBirthdayT10MonthConfirmationStep(currentStep)) {
-        if (isPayload(cleanPayload, "BIRTHDAY_MONTH_YES", "YES_THAT_S_CORRECT", "YES_THATS_CORRECT", "YES_CORRECT", "YES" )) {
-            sendBirthdayT10Opener(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
-            return true;
-        }
-        if (isPayload(cleanPayload, "BIRTHDAY_MONTH_NO", "NO_THAT_S_NOT_RIGHT", "NO_THATS_NOT_RIGHT", "NO_NOT_RIGHT", "NO" )) {
-
-            sendBirthdayT10DobCorrectionAsk(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_DOB_PENDING);
-            return true;
-        }
-    }
-
-
-    if (isBirthdayT10BridgeStep(currentStep)) {
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_YES_SHOW_ME", "YES_SHOW_ME", "SHOW_ME")) {
-            sendBirthdayT10Opener(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_MAYBE_LATER", "NO_MAYBE_LATER", "MAYBE_LATER")) {
-            sendBirthdayT10GracefulExit(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
-            return true;
-        }
-        if (isPayload(cleanPayload, "NO_MAYBE_LATER", "MAYBE_LATER")) {
-            sendBirthdayT10GracefulExit(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
-            return true;
-        }
-    }
-
-    if (isBirthdayT10OpenerStep(currentStep)) {
-        if (isPayload(cleanPayload, "FIND_MY_PERFECT_WATCH", "FIND_PERFECT_WATCH", "FIND_BIRTHDAY_WATCH", "FIND_WATCH", "FIND_MY_WATCH", "FIND_MY_BIRTHDAY_WATCH")) {
-            sendBirthdayT10GenderSelection(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload, "SEE_BIRTHDAY_OFFERS", "BIRTHDAY_OFFERS", "EXCLUSIVE_BIRTHDAY_OFFERS")) {
-            sendBirthdayT10Offer(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_T10_OFFER_SENT);
-            return true;
+                sendBirthdayT10DobCorrectionAsk(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_DOB_PENDING);
+                return true;
+            }
         }
 
 
-        if (isStep(currentStep, STEP_BIRTHDAY_T10_STORE_VISIT_SENT, "STORE_VISIT_SENT")) {
+        if (isBirthdayT10BridgeStep(currentStep)) {
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_YES_SHOW_ME", "YES_SHOW_ME", "SHOW_ME")) {
+                sendBirthdayT10Opener(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_OPENER_SENT);
+                return true;
+            }
 
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_MAYBE_LATER", "NO_MAYBE_LATER", "MAYBE_LATER")) {
+                sendBirthdayT10GracefulExit(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
+                return true;
+            }
+            if (isPayload(cleanPayload, "NO_MAYBE_LATER", "MAYBE_LATER")) {
+                sendBirthdayT10GracefulExit(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_GRACEFUL_EXIT);
+                return true;
+            }
+        }
+
+        if (isBirthdayT10OpenerStep(currentStep)) {
+            if (isPayload(cleanPayload, "FIND_MY_PERFECT_WATCH", "FIND_PERFECT_WATCH", "FIND_BIRTHDAY_WATCH", "FIND_WATCH", "FIND_MY_WATCH", "FIND_MY_BIRTHDAY_WATCH")) {
+                sendBirthdayT10GenderSelection(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload, "SEE_BIRTHDAY_OFFERS", "BIRTHDAY_OFFERS", "EXCLUSIVE_BIRTHDAY_OFFERS")) {
+                sendBirthdayT10Offer(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_T10_OFFER_SENT);
+                return true;
+            }
+
+
+            if (isStep(currentStep, STEP_BIRTHDAY_T10_STORE_VISIT_SENT, "STORE_VISIT_SENT")) {
+
+                if (isPayload(cleanPayload,
+                        "BIRTHDAY_T10_BOOK_APPOINTMENT",
+                        "BOOK_AN_APPOINTMENT")) {
+
+                    saveLead(
+                            phone,
+                            session.getCustomerId(),
+                            firstName,
+                            session,
+                            Lead.LeadType.CALLBACK,
+                            "Birthday T-10 book appointment"
+                    );
+
+                    sendBirthdayT10CallbackConfirmation(phone);
+                    saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
+                    return true;
+                }
+            }
+        }
+
+        if (isBirthdayT10GenderSelectionStep(currentStep)) {
+            if (isMensCollectionPayload(cleanPayload)) {
+                return sendBirthdayT10BrandCarousel(phone, session, firstName, "MEN");
+            }
+
+            if (isWomensCollectionPayload(cleanPayload)) {
+                return sendBirthdayT10BrandCarousel(phone, session, firstName, "WOMEN");
+            }
+        }
+
+        if (isBirthdayT10BrandCarouselStep(currentStep)) {
+            if (isExploreCarouselPayload(cleanPayload)) {
+                return handleBirthdayT10ExploreCollection(phone, session, firstName, cleanPayload);
+            }
+
+            if (isCallbackCarouselPayload(cleanPayload)) {
+                return handleBirthdayT10CarouselCallback(phone, session, firstName,cleanPayload);
+            }
+        }
+
+
+                        if (isBirthdayT10CatalogueOrOfferStep(currentStep)) {
+                            if (isPayload(cleanPayload,
+                                    "BIRTHDAY_T10_OFFER_BOOK_STORE",
+                                    "BIRTHDAY_T10_CATALOGUE_VISIT_STORE")
+                                    || isStoreVisitPayload(cleanPayload)) {
+
+                                saveLead(
+                                        phone,
+                                        session.getCustomerId(),
+                                        firstName,
+                                        session,
+                                        Lead.LeadType.STORE_VISIT,
+                                        "Birthday T-10 store visit requested"
+                                );
+
+                                sendBirthdayT10StoreVisit(phone);
+                                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
+                                return true;
+                            }
+
+            // Offer path Request callback
+            // Catalogue follow-up Request callback
+            // Dono case me direct Done + Explore again aana chahiye.
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_T10_OFFER_CALLBACK",
+                    "BIRTHDAY_T10_CATALOGUE_CALLBACK")
+                    || isCallbackPayload(cleanPayload)) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Birthday T-10 callback requested"
+                );
+
+                sendBirthdayT10CallbackConfirmation(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
+        }
+
+
+        if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
+            if (isBirthdayT10AnyStep(currentStep)) {
+                sendBirthdayT10GenderSelection(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
+                return true;
+            }
+        }
+
+
+        // Safety fallback for old Birthday T-10 messages already sent on WhatsApp.
+// Agar user old upper button click kare, welcome flow me mat bhejo.
+        if (isBirthdayT10AnyStep(currentStep)) {
+
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_BOOK_STORE", "BIRTHDAY_T10_VISIT_STORE")
+                    || isStoreVisitPayload(cleanPayload)) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Birthday T-10 store visit requested (fallback)"
+                );
+
+                sendBirthdayT10StoreVisit(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_CATALOGUE_CALLBACK")) {
+
+                sendBirthdayT10StoreHelp(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_OFFER_CALLBACK", "BIRTHDAY_T10_BOOK_APPOINTMENT")
+                    || isCallbackPayload(cleanPayload)) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Birthday T-10 callback requested (fallback)"
+                );
+
+                sendBirthdayT10CallbackConfirmation(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
+
+            if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
+
+                sendBirthdayT10GenderSelection(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
+                return true;
+            }
+        }
+
+
+        // ----------------------------------------------------
+// Birthday T-10 stale old buttons safety
+// User agar neeche aane ke baad upar wala old button click kare,
+// toh bhi expected response hi aana chahiye.
+// ----------------------------------------------------
+        if (isBirthdayT10AnyStep(currentStep)) {
+
+            // Old/new Book store visit / Visit nearest store
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_T10_OFFER_BOOK_STORE",
+                    "BIRTHDAY_T10_BOOK_STORE",
+                    "BIRTHDAY_T10_CATALOGUE_VISIT_STORE",
+                    "BIRTHDAY_T10_VISIT_STORE",
+                    "VISIT_NEAREST_STORE",
+                    "BOOK_STORE_VISIT",
+                    "VISIT_STORE",
+                    "NEARBY_STORE",
+                    "PICK_UP_STORE",
+                    "STORE_VISIT",
+                    "FIND_STORE_NEAR_ME")
+                    || (cleanPayload != null && cleanPayload.startsWith("BOOK_STORE_VISIT_"))) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Birthday T-10 store visit requested (stale button)"
+                );
+
+                sendBirthdayT10StoreVisit(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
+                return true;
+            }
+
+            // Old/new Request callback
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_T10_OFFER_CALLBACK",
+                    "BIRTHDAY_T10_CATALOGUE_CALLBACK",
+                    "REQUEST_CALLBACK",
+                    "REQUEST_A_CALLBACK",
+                    "INTERESTED",
+                    "SPEAK_WITH_EXPERT")
+                    || (cleanPayload != null && cleanPayload.startsWith("REQUEST_CALLBACK_"))) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Birthday T-10 callback requested (stale button)"
+                );
+
+                sendBirthdayT10CallbackConfirmation(phone);
+                saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
+
+            // Old/new Book appointment
             if (isPayload(cleanPayload,
                     "BIRTHDAY_T10_BOOK_APPOINTMENT",
                     "BOOK_AN_APPOINTMENT")) {
 
-                // ════════════════════════════════════════════
-                // FIX — CALLBACK lead ab save hoga (pehle missing tha)
-                // ════════════════════════════════════════════
                 saveLead(
                         phone,
                         session.getCustomerId(),
@@ -1250,248 +1207,22 @@ private boolean handleBirthdayT10Flow(
                 saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
                 return true;
             }
-        }
-    }
 
-    if (isBirthdayT10GenderSelectionStep(currentStep)) {
-        if (isMensCollectionPayload(cleanPayload)) {
-            return sendBirthdayT10BrandCarousel(phone, session, firstName, "MEN");
-        }
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_EXPLORE_AGAIN",
+                    "EXPLORE_AGAIN",
+                    "BROWSE_AGAIN")) {
 
-        if (isWomensCollectionPayload(cleanPayload)) {
-            return sendBirthdayT10BrandCarousel(phone, session, firstName, "WOMEN");
-        }
-    }
-
-    if (isBirthdayT10BrandCarouselStep(currentStep)) {
-        if (isExploreCarouselPayload(cleanPayload)) {
-            return handleBirthdayT10ExploreCollection(phone, session, firstName, cleanPayload);
-        }
-
-        if (isCallbackCarouselPayload(cleanPayload)) {
-            return handleBirthdayT10CarouselCallback(phone, session, firstName,cleanPayload);
-        }
-    }
-
-
-    if (isBirthdayT10CatalogueOrOfferStep(currentStep)) {
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_T10_OFFER_BOOK_STORE",
-                "BIRTHDAY_T10_CATALOGUE_VISIT_STORE")
-                || isStoreVisitPayload(cleanPayload)) {
-
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Birthday T-10 store visit requested"
-            );
-
-            sendBirthdayT10StoreVisit(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-            return true;
-        }
-
-        // Offer path Request callback
-        // Catalogue follow-up Request callback
-        // Dono case me direct Done + Explore again aana chahiye.
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_T10_OFFER_CALLBACK",
-                "BIRTHDAY_T10_CATALOGUE_CALLBACK")
-                || isCallbackPayload(cleanPayload)) {
-
-
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Birthday T-10 callback requested"
-            );
-
-            sendBirthdayT10CallbackConfirmation(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-    }
-
-
-    if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
-        if (isBirthdayT10AnyStep(currentStep)) {
-            sendBirthdayT10GenderSelection(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-            return true;
-        }
-    }
-
-
-    // Safety fallback for old Birthday T-10 messages already sent on WhatsApp.
-    // Agar user old upper button click kare, welcome flow me mat bhejo.
-    if (isBirthdayT10AnyStep(currentStep)) {
-
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_BOOK_STORE", "BIRTHDAY_T10_VISIT_STORE")
-                || isStoreVisitPayload(cleanPayload)) {
-
-            // ════════════════════════════════════════════
-            // FIX — STORE_VISIT lead ab save hoga (fallback path mein bhi)
-            // ════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Birthday T-10 store visit requested (fallback)"
-            );
-
-            sendBirthdayT10StoreVisit(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_CATALOGUE_CALLBACK")) {
-
-            sendBirthdayT10StoreHelp(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_OFFER_CALLBACK", "BIRTHDAY_T10_BOOK_APPOINTMENT")
-                || isCallbackPayload(cleanPayload)) {
-
-            // ════════════════════════════════════════════
-            // FIX — CALLBACK lead ab save hoga (fallback path mein bhi)
-            // ════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Birthday T-10 callback requested (fallback)"
-            );
-
-            sendBirthdayT10CallbackConfirmation(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-
-        if (isPayload(cleanPayload, "BIRTHDAY_T10_EXPLORE_AGAIN", "EXPLORE_AGAIN", "BROWSE_AGAIN")) {
-
-            sendBirthdayT10GenderSelection(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_GENDER_SELECTION_SENT);
-            return true;
-        }
-    }
-
-
-    // ----------------------------------------------------
-    // Birthday T-10 stale old buttons safety
-    // User agar neeche aane ke baad upar wala old button click kare,
-    // toh bhi expected response hi aana chahiye.
-    // ----------------------------------------------------
-    if (isBirthdayT10AnyStep(currentStep)) {
-
-        // Old/new Book store visit / Visit nearest store
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_T10_OFFER_BOOK_STORE",
-                "BIRTHDAY_T10_BOOK_STORE",
-                "BIRTHDAY_T10_CATALOGUE_VISIT_STORE",
-                "BIRTHDAY_T10_VISIT_STORE",
-                "VISIT_NEAREST_STORE",
-                "BOOK_STORE_VISIT",
-                "VISIT_STORE",
-                "NEARBY_STORE",
-                "PICK_UP_STORE",
-                "STORE_VISIT",
-                "FIND_STORE_NEAR_ME")
-                || (cleanPayload != null && cleanPayload.startsWith("BOOK_STORE_VISIT_"))) {
-
-            // ════════════════════════════════════════════
-            // FIX — STORE_VISIT lead ab save hoga (stale-button path)
-            // ════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Birthday T-10 store visit requested (stale button)"
-            );
-
-            sendBirthdayT10StoreVisit(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_STORE_VISIT_SENT);
-            return true;
-        }
-
-        // Old/new Request callback
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_T10_OFFER_CALLBACK",
-                "BIRTHDAY_T10_CATALOGUE_CALLBACK",
-                "REQUEST_CALLBACK",
-                "REQUEST_A_CALLBACK",
-                "INTERESTED",
-                "SPEAK_WITH_EXPERT")
-                || (cleanPayload != null && cleanPayload.startsWith("REQUEST_CALLBACK_"))) {
-
-            // ════════════════════════════════════════════
-            // FIX — CALLBACK lead ab save hoga (stale-button path)
-            // ════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Birthday T-10 callback requested (stale button)"
-            );
-
-            sendBirthdayT10CallbackConfirmation(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-
-        // Old/new Book appointment
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_T10_BOOK_APPOINTMENT",
-                "BOOK_AN_APPOINTMENT")) {
-
-            // ════════════════════════════════════════════
-            // FIX — CALLBACK lead ab save hoga (book appointment path)
-            // ════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Birthday T-10 book appointment"
-            );
-
-            sendBirthdayT10CallbackConfirmation(phone);
-            saveStep(session, STEP_BIRTHDAY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_EXPLORE_AGAIN",
-                "EXPLORE_AGAIN",
-                "BROWSE_AGAIN")) {
-
-            if (isAnniversaryT10AnyStep(currentStep)) {
-                sendAnniversaryT10GenderSelection(phone);
-                saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-                return true;
+                if (isAnniversaryT10AnyStep(currentStep)) {
+                    sendAnniversaryT10GenderSelection(phone);
+                    saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
+                    return true;
+                }
             }
         }
+
+        return false;
     }
-
-    return false;
-}
-
 
 
 
@@ -1824,169 +1555,6 @@ private boolean handleBirthdayT10Flow(
         return false;
     }
 
-//    private boolean handleAnniversaryT10StalePayload(
-//            String phone,
-//            BotSession session,
-//            String firstName,
-//            String cleanPayload
-//    ) {
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_MONTH_CONFIRMED",
-//                "ANNIVERSARY_MONTH_YES",
-//                "YES_THAT_S_CORRECT",
-//                "YES_THATS_CORRECT",
-//                "YES_CORRECT", "YES" )) {
-//
-//            sendAnniversaryT10Opener(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_T10_BRIDGE_SENT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_DATE_CORRECTION",
-//                "ANNIVERSARY_MONTH_NO",
-//                "NO_THAT_S_NOT_RIGHT",
-//                "NO_THATS_NOT_RIGHT",
-//                "NO_NOT_RIGHT")) {
-//
-//            sendAnniversaryT10DateCorrectionAsk(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_T10_DATE_PENDING);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_EXPLORE_COLLECTIONS",
-//                "ANNIV_YES_SHOW_ME")) {
-//
-//            sendAnniversaryT10Opener(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_EXIT_AFTER_CONFIRMATION",
-//                "ANNIV_MAYBE_LATER")) {
-//
-//            sendAnniversaryT10GracefulExit(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_T10_GRACEFUL_EXIT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_FIND_GIFT",
-//                "FIND_ANNIVERSARY_GIFT",
-//                "FIND_PERFECT_GIFT",
-//                "FIND_GIFT")) {
-//
-//            sendAnniversaryT10GenderSelection(phone);
-//            saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_VIEW_OFFERS",
-//                "SEE_ANNIVERSARY_OFFERS",
-//                "ANNIVERSARY_OFFERS")) {
-//
-//            sendAnniversaryT10Offer(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_T10_OFFER_SENT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_MENS_COLLECTION",
-//                "MENS_COLLECTION",
-//                "MEN_COLLECTION",
-//                "MENS")) {
-//
-//            return sendAnniversaryT10BrandCarousel(phone, session, firstName, "MEN");
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_WOMENS_COLLECTION",
-//                "WOMENS_COLLECTION",
-//                "WOMEN_COLLECTION",
-//                "WOMENS")) {
-//
-//            return sendAnniversaryT10BrandCarousel(phone, session, firstName, "WOMEN");
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_COUPLE_WATCHES",
-//                "COUPLE_WATCHES",
-//                "COUPLE")) {
-//
-//            sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
-//            session.setSelectedCollection(BotSession.Collection.COUPLES);
-//            saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
-//            scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
-//            return true;
-//        }
-//
-//        // Carousel common rehne do.
-//        if (isExploreCarouselPayload(cleanPayload)) {
-//            return handleAnniversaryT10ExploreCollection(phone, session, firstName, cleanPayload);
-//        }
-//
-//        if (isCallbackCarouselPayload(cleanPayload)) {
-//            return handleAnniversaryT10CarouselCallback(phone, session, firstName ,cleanPayload);
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_CATALOGUE_VISIT_STORE",
-//                "ANNIVERSARY_T10_OFFER_BOOK_STORE",
-//                "ANNIV_BOOK_STORE",
-//                "VISIT_NEAREST_STORE")) {
-//
-//            sendAnniversaryT10StoreVisit(phone);
-//            saveStep(session, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_CATALOGUE_CALLBACK",
-//                "ANNIVERSARY_T10_OFFER_CALLBACK",
-//                "ANNIV_T10_CALLBACK",
-//                "REQUEST_CALLBACK")) {
-//
-//            saveLead(
-//                    phone,
-//                    session.getCustomerId(),
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Anniversary T-10 callback requested"
-//            );
-//
-//            sendAnniversaryT10CallbackConfirmation(phone);
-//            saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_BOOK_APPOINTMENT",
-//                "BOOK_AN_APPOINTMENT")) {
-//
-//            sendAnniversaryT10CallbackConfirmation(phone);
-//            saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-//            return true;
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_EXPLORE_AGAIN",
-//                "EXPLORE_AGAIN",
-//                "BROWSE_AGAIN")) {
-//
-//            sendAnniversaryT10GenderSelection(phone);
-//            saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-//            return true;
-//        }
-//
-//        return false;
-//    }
-
-
-
     private boolean handleAnniversaryT10StalePayload(
             String phone,
             BotSession session,
@@ -2101,9 +1669,6 @@ private boolean handleBirthdayT10Flow(
                 "ANNIV_BOOK_STORE",
                 "VISIT_NEAREST_STORE")) {
 
-            // ════════════════════════════════════════════════
-            // FIX — STORE_VISIT lead ab save hoga (stale payload path)
-            // ════════════════════════════════════════════════
             saveLead(
                     phone,
                     session.getCustomerId(),
@@ -2142,18 +1707,6 @@ private boolean handleBirthdayT10Flow(
                 "ANNIVERSARY_T10_BOOK_APPOINTMENT",
                 "BOOK_AN_APPOINTMENT")) {
 
-            // ════════════════════════════════════════════════
-            // FIX — CALLBACK lead ab save hoga (book appointment, stale path)
-            // ════════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Anniversary T-10 book appointment (stale)"
-            );
-
             sendAnniversaryT10CallbackConfirmation(phone);
             saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
             return true;
@@ -2171,7 +1724,6 @@ private boolean handleBirthdayT10Flow(
 
         return false;
     }
-
     private boolean handleAnniversaryTDayStalePayload(
             String phone,
             BotSession session,
@@ -2474,409 +2026,211 @@ private boolean handleBirthdayT10Flow(
         );
     }
 
+    private boolean handleBirthdayTDayFlow(
+            String phone,
+            BotSession session,
+            String firstName,
+            String cleanPayload,
+            Long customerId
+    ) {
+        String currentStep = safeStep(session);
 
-//    old code
-//    private boolean handleBirthdayTDayFlow(
-//            String phone,
-//            BotSession session,
-//            String firstName,
-//            String cleanPayload,
-//            Long customerId
-//    ) {
-//        String currentStep = safeStep(session);
-//
-//        // ----------------------------------------------------
-//        // Birthday T-Day exit message button
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayExitMessageStep(currentStep)) {
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_VISIT_ANYTIME",
-//                    "VISIT_US_ANYTIME")) {
-//                karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_FLOW_COMPLETED);
-//                return true;
-//            }
-//            log.info("Ignored old T-Day button after exit message phone={} step={} payload={}",
-//                    phone, currentStep, cleanPayload);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Birthday T-Day already completed
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayCompletedStep(currentStep)) {
-//            log.info("Ignored payload after Birthday T-Day completed phone={} payload={}",
-//                    phone, cleanPayload);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Template step — no CTA: any input triggers opener
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayTemplateStep(currentStep)) {
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_VIEW_BENEFIT",
-//                    "VIEW_ACCOUNT_BENEFIT",
-//                    "VIEW_BENEFIT")) {
-//                sendBirthdayTDayWish(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_WISH_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_LOCATE_STORE_FROM_BENEFIT",
-//                    "LOCATE_NEAREST_STORE")) {
-//                sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
-//                return true;
-//            }
-//            // No CTA template: any text/unknown input triggers birthday opener
-//            sendBirthdayTDayOpener(phone, firstName);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_OPENER_SENT);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Birthday wish message → Locate Store
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayActiveStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_LOCATE_STORE_FROM_WISH",
-//                "LOCATE_STORE",
-//                "LOCATE_NEAREST_STORE_FROM_WISH")) {
-//            sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Birthday T-Day opener buttons
-//        // ----------------------------------------------------
-//        if (isStep(currentStep,
-//                STEP_BIRTHDAY_TDAY_OPENER_SENT,
-//                STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT,
-//                STEP_BIRTHDAY_TDAY_MEN_BRAND_CAROUSEL_SENT,
-//                STEP_BIRTHDAY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
-//                STEP_BIRTHDAY_TDAY_CATALOGUE_SENT,
-//                STEP_BIRTHDAY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
-//                STEP_BIRTHDAY_TDAY_OFFER_SENT,
-//                STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT,
-//                STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED)) {
-//
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_FIND_WATCH",
-//                    "FIND_MY_PERFECT_WATCH",
-//                    "FIND_BIRTHDAY_WATCH")) {
-//                sendBirthdayTDayGenderSelection(phone);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_SEE_OFFERS",
-//                    "SEE_BIRTHDAY_OFFERS",
-//                    "BIRTHDAY_OFFERS")) {
-//                sendBirthdayTDayOffer(phone, firstName);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_OFFER_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_MENS_COLLECTION",
-//                    "MENS_COLLECTION")) {
-//                return sendBirthdayTDayBrandCarousel(phone, session, firstName, "MEN");
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_WOMENS_COLLECTION",
-//                    "WOMENS_COLLECTION")) {
-//                return sendBirthdayTDayBrandCarousel(phone, session, firstName, "WOMEN");
-//            }
-//            if (isExploreCarouselPayload(cleanPayload)) {
-//                return handleBirthdayTDayExploreCollection(phone, session, firstName, cleanPayload);
-//            }
-//            if (isCallbackCarouselPayload(cleanPayload)) {
-//                return handleBirthdayTDayCarouselCallback(phone, session, firstName, cleanPayload);
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_OFFER_BOOK_STORE",
-//                    "BIRTHDAY_TDAY_CATALOGUE_VISIT_STORE")) {
-//
-//                saveLead(                                              // ← ADDED
-//                        phone,
-//                        customerId,
-//                        firstName,
-//                        session,
-//                        Lead.LeadType.STORE_VISIT,
-//                        "Birthday T-Day store visit requested"
-//                );
-//
-//
-//
-//
-//                sendBirthdayTDayCollectionStoreVisit(phone);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload,
-//                    "BIRTHDAY_TDAY_OFFER_CALLBACK",
-//                    "BIRTHDAY_TDAY_CATALOGUE_CALLBACK",
-//                    "BIRTHDAY_TDAY_BOOK_APPOINTMENT")) {
-//                sendBirthdayTDayCollectionCallbackConfirmation(phone);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload, "BIRTHDAY_TDAY_EXPLORE_AGAIN")) {
-//                sendBirthdayTDayGenderSelection(phone);
-//                saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//        }
-//
-//        // ----------------------------------------------------
-//        // Store visit assistance → callback → reminder
-//        // ----------------------------------------------------
-//        if (isStep(currentStep,
-//                STEP_BIRTHDAY_TDAY_STORE_HELP_SENT,
-//                "STEP_6B_SENT")
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
-//
-//
-//
-//
-//            saveLead(                                                  // ← ADDED (bonus — yahan bhi callback hai)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Birthday T-Day callback after store visit"
-//            );
-//
-//            sendBirthdayTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_CALLBACK_CONFIRMED);
-//            scheduleBirthdayTDayFinalReminder(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Reminder → Visit Store Today
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayFinalReminderStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_VISIT_STORE_FROM_REMINDER",
-//                "VISIT_STORE_TODAY")) {
-//            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//            sendBirthdayTDayStoreHelpAfterReminderStoreVisit(phone);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_STORE_SENT);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Reminder → Request Callback direct
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayFinalReminderStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_CALLBACK_FROM_REMINDER")) {
-//
-//            saveLead(                                                  // ← ADDED (bonus — direct callback bhi)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Birthday T-Day callback from reminder"
-//            );
-//
-//
-//            sendBirthdayTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-//            scheduleBirthdayTDayExit(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Store help after reminder store visit → callback → exit
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayFinalReminderStoreStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
-//
-//            saveLead(                                                  // ← ADDED (bonus)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Birthday T-Day callback after reminder store"
-//            );
-//
-//            sendBirthdayTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-//            scheduleBirthdayTDayExit(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Exit CTA → Visit us anytime
-//        // ----------------------------------------------------
-//        if (isBirthdayTDayActiveStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "BIRTHDAY_TDAY_VISIT_ANYTIME",
-//                "VISIT_US_ANYTIME")) {
-//            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//            saveStep(session, STEP_BIRTHDAY_TDAY_EXIT_MESSAGE_SENT);
-//            return true;
-//        }
-//
-//        return false;
-//    }
-
-
-
-
-
-//    new code
-private boolean handleBirthdayTDayFlow(
-        String phone,
-        BotSession session,
-        String firstName,
-        String cleanPayload,
-        Long customerId
-) {
-    String currentStep = safeStep(session);
-
-    // ----------------------------------------------------
-    // Birthday T-Day exit message button
-    // ----------------------------------------------------
-    if (isBirthdayTDayExitMessageStep(currentStep)) {
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_VISIT_ANYTIME",
-                "VISIT_US_ANYTIME")) {
-            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-            saveStep(session, STEP_BIRTHDAY_TDAY_FLOW_COMPLETED);
+        // ----------------------------------------------------
+        // Birthday T-Day exit message button
+        // ----------------------------------------------------
+        if (isBirthdayTDayExitMessageStep(currentStep)) {
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_VISIT_ANYTIME",
+                    "VISIT_US_ANYTIME")) {
+                karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+                saveStep(session, STEP_BIRTHDAY_TDAY_FLOW_COMPLETED);
+                return true;
+            }
+            log.info("Ignored old T-Day button after exit message phone={} step={} payload={}",
+                    phone, currentStep, cleanPayload);
             return true;
         }
-        log.info("Ignored old T-Day button after exit message phone={} step={} payload={}",
-                phone, currentStep, cleanPayload);
-        return true;
-    }
 
-    // ----------------------------------------------------
-    // Birthday T-Day already completed
-    // ----------------------------------------------------
-    if (isBirthdayTDayCompletedStep(currentStep)) {
-        log.info("Ignored payload after Birthday T-Day completed phone={} payload={}",
-                phone, cleanPayload);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Template step — no CTA: any input triggers opener
-    // ----------------------------------------------------
-    if (isBirthdayTDayTemplateStep(currentStep)) {
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_VIEW_BENEFIT",
-                "VIEW_ACCOUNT_BENEFIT",
-                "VIEW_BENEFIT")) {
-            sendBirthdayTDayWish(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_TDAY_WISH_SENT);
+        // ----------------------------------------------------
+        // Birthday T-Day already completed
+        // ----------------------------------------------------
+        if (isBirthdayTDayCompletedStep(currentStep)) {
+            log.info("Ignored payload after Birthday T-Day completed phone={} payload={}",
+                    phone, cleanPayload);
             return true;
         }
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_LOCATE_STORE_FROM_BENEFIT",
-                "LOCATE_NEAREST_STORE")) {
+
+        // ----------------------------------------------------
+        // Template step — no CTA: any input triggers opener
+        // ----------------------------------------------------
+        if (isBirthdayTDayTemplateStep(currentStep)) {
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_VIEW_BENEFIT",
+                    "VIEW_ACCOUNT_BENEFIT",
+                    "VIEW_BENEFIT")) {
+                sendBirthdayTDayWish(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_TDAY_WISH_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_LOCATE_STORE_FROM_BENEFIT",
+                    "LOCATE_NEAREST_STORE")) {
+                sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
+                return true;
+            }
+            // No CTA template: any text/unknown input triggers birthday opener
+            sendBirthdayTDayOpener(phone, firstName);
+            saveStep(session, STEP_BIRTHDAY_TDAY_OPENER_SENT);
+            return true;
+        }
+
+        // ----------------------------------------------------
+        // Birthday wish message → Locate Store
+        // ----------------------------------------------------
+        if (isBirthdayTDayActiveStep(currentStep)
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_LOCATE_STORE_FROM_WISH",
+                "LOCATE_STORE",
+                "LOCATE_NEAREST_STORE_FROM_WISH")) {
             sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
-        // No CTA template: any text/unknown input triggers birthday opener
-        sendBirthdayTDayOpener(phone, firstName);
-        saveStep(session, STEP_BIRTHDAY_TDAY_OPENER_SENT);
-        return true;
-    }
 
-    // ----------------------------------------------------
-    // Birthday wish message → Locate Store
-    // ----------------------------------------------------
-    if (isBirthdayTDayActiveStep(currentStep)
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_LOCATE_STORE_FROM_WISH",
-            "LOCATE_STORE",
-            "LOCATE_NEAREST_STORE_FROM_WISH")) {
-        sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
-        return true;
-    }
+        // ----------------------------------------------------
+        // Birthday T-Day opener buttons
+        // ----------------------------------------------------
+        if (isStep(currentStep,
+                STEP_BIRTHDAY_TDAY_OPENER_SENT,
+                STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT,
+                STEP_BIRTHDAY_TDAY_MEN_BRAND_CAROUSEL_SENT,
+                STEP_BIRTHDAY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
+                STEP_BIRTHDAY_TDAY_CATALOGUE_SENT,
+                STEP_BIRTHDAY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
+                STEP_BIRTHDAY_TDAY_OFFER_SENT,
+                STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT,
+                STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED)) {
 
-    // ----------------------------------------------------
-    // Birthday T-Day opener buttons
-    // ----------------------------------------------------
-    if (isStep(currentStep,
-            STEP_BIRTHDAY_TDAY_OPENER_SENT,
-            STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT,
-            STEP_BIRTHDAY_TDAY_MEN_BRAND_CAROUSEL_SENT,
-            STEP_BIRTHDAY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
-            STEP_BIRTHDAY_TDAY_CATALOGUE_SENT,
-            STEP_BIRTHDAY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
-            STEP_BIRTHDAY_TDAY_OFFER_SENT,
-            STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT,
-            STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED)) {
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_FIND_WATCH",
+                    "FIND_MY_PERFECT_WATCH",
+                    "FIND_BIRTHDAY_WATCH")) {
+                sendBirthdayTDayGenderSelection(phone);
+                saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_SEE_OFFERS",
+                    "SEE_BIRTHDAY_OFFERS",
+                    "BIRTHDAY_OFFERS")) {
+                sendBirthdayTDayOffer(phone, firstName);
+                saveStep(session, STEP_BIRTHDAY_TDAY_OFFER_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_MENS_COLLECTION",
+                    "MENS_COLLECTION")) {
+                return sendBirthdayTDayBrandCarousel(phone, session, firstName, "MEN");
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_WOMENS_COLLECTION",
+                    "WOMENS_COLLECTION")) {
+                return sendBirthdayTDayBrandCarousel(phone, session, firstName, "WOMEN");
+            }
+            if (isExploreCarouselPayload(cleanPayload)) {
+                return handleBirthdayTDayExploreCollection(phone, session, firstName, cleanPayload);
+            }
+            if (isCallbackCarouselPayload(cleanPayload)) {
+                return handleBirthdayTDayCarouselCallback(phone, session, firstName, cleanPayload);
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_OFFER_BOOK_STORE",
+                    "BIRTHDAY_TDAY_CATALOGUE_VISIT_STORE")) {
 
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_FIND_WATCH",
-                "FIND_MY_PERFECT_WATCH",
-                "FIND_BIRTHDAY_WATCH")) {
-            sendBirthdayTDayGenderSelection(phone);
-            saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
-            return true;
-        }
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_SEE_OFFERS",
-                "SEE_BIRTHDAY_OFFERS",
-                "BIRTHDAY_OFFERS")) {
-            sendBirthdayTDayOffer(phone, firstName);
-            saveStep(session, STEP_BIRTHDAY_TDAY_OFFER_SENT);
-            return true;
-        }
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_MENS_COLLECTION",
-                "MENS_COLLECTION")) {
-            return sendBirthdayTDayBrandCarousel(phone, session, firstName, "MEN");
-        }
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_WOMENS_COLLECTION",
-                "WOMENS_COLLECTION")) {
-            return sendBirthdayTDayBrandCarousel(phone, session, firstName, "WOMEN");
-        }
-        if (isExploreCarouselPayload(cleanPayload)) {
-            return handleBirthdayTDayExploreCollection(phone, session, firstName, cleanPayload);
-        }
-        if (isCallbackCarouselPayload(cleanPayload)) {
-            return handleBirthdayTDayCarouselCallback(phone, session, firstName, cleanPayload);
+                saveLead(
+                        phone,
+                        customerId,
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Birthday T-Day store visit requested"
+                );
+
+
+
+
+                sendBirthdayTDayCollectionStoreVisit(phone);
+                saveStep(session, STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload,
+                    "BIRTHDAY_TDAY_OFFER_CALLBACK",
+                    "BIRTHDAY_TDAY_CATALOGUE_CALLBACK",
+                    "BIRTHDAY_TDAY_BOOK_APPOINTMENT")) {
+
+                saveLead(
+                        phone,
+                        customerId,
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Birthday T-Day callback requested"
+                );
+
+                sendBirthdayTDayCollectionCallbackConfirmation(phone);
+                saveStep(session, STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
+            if (isPayload(cleanPayload, "BIRTHDAY_TDAY_EXPLORE_AGAIN")) {
+                sendBirthdayTDayGenderSelection(phone);
+                saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
+                return true;
+            }
         }
 
-        // ════════════════════════════════════════════════════
-        // FIX — STORE_VISIT lead ab save hoga (pehle missing tha)
-        // ════════════════════════════════════════════════════
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_OFFER_BOOK_STORE",
-                "BIRTHDAY_TDAY_CATALOGUE_VISIT_STORE")) {
+        // ----------------------------------------------------
+        // Store visit assistance → callback → reminder
+        // ----------------------------------------------------
+        if (isStep(currentStep,
+                STEP_BIRTHDAY_TDAY_STORE_HELP_SENT,
+                "STEP_6B_SENT")
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
 
-            saveLead(
+            saveLead(                                                  // ← ADDED (bonus — yahan bhi callback hai)
                     phone,
                     customerId,
                     firstName,
                     session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Birthday T-Day store visit requested"
+                    Lead.LeadType.CALLBACK,
+                    "Birthday T-Day callback after store visit"
             );
 
-            sendBirthdayTDayCollectionStoreVisit(phone);
-            saveStep(session, STEP_BIRTHDAY_TDAY_T10_STORE_VISIT_SENT);
+            sendBirthdayTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_BIRTHDAY_TDAY_CALLBACK_CONFIRMED);
+            scheduleBirthdayTDayFinalReminder(phone, firstName);
             return true;
         }
 
-        // ════════════════════════════════════════════════════
-        // FIX — CALLBACK lead ab save hoga (pehle missing tha — YE ASLI MAIN BUG THA)
-        // ════════════════════════════════════════════════════
-        if (isPayload(cleanPayload,
-                "BIRTHDAY_TDAY_OFFER_CALLBACK",
-                "BIRTHDAY_TDAY_CATALOGUE_CALLBACK",
-                "BIRTHDAY_TDAY_BOOK_APPOINTMENT")) {
+        // ----------------------------------------------------
+        // Reminder → Visit Store Today
+        // ----------------------------------------------------
+        if (isBirthdayTDayFinalReminderStep(currentStep)
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_VISIT_STORE_FROM_REMINDER",
+                "VISIT_STORE_TODAY")) {
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+            sendBirthdayTDayStoreHelpAfterReminderStoreVisit(phone);
+            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_STORE_SENT);
+            return true;
+        }
+
+        // ----------------------------------------------------
+        // Reminder → Request Callback direct
+        // ----------------------------------------------------
+        if (isBirthdayTDayFinalReminderStep(currentStep)
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_CALLBACK_FROM_REMINDER")) {
+
 
             saveLead(
                     phone,
@@ -2884,115 +2238,52 @@ private boolean handleBirthdayTDayFlow(
                     firstName,
                     session,
                     Lead.LeadType.CALLBACK,
-                    "Birthday T-Day callback requested"
+                    "Birthday T-Day callback from reminder"
             );
 
-            sendBirthdayTDayCollectionCallbackConfirmation(phone);
-            saveStep(session, STEP_BIRTHDAY_TDAY_T10_CALLBACK_CONFIRMED);
+
+            sendBirthdayTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
+            scheduleBirthdayTDayExit(phone, firstName);
             return true;
         }
-        if (isPayload(cleanPayload, "BIRTHDAY_TDAY_EXPLORE_AGAIN")) {
-            sendBirthdayTDayGenderSelection(phone);
-            saveStep(session, STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT);
+
+        // ----------------------------------------------------
+        // Store help after reminder store visit → callback → exit
+        // ----------------------------------------------------
+        if (isBirthdayTDayFinalReminderStoreStep(currentStep)
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
+
+            saveLead(
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Birthday T-Day callback after reminder store"
+            );
+
+            sendBirthdayTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
+            scheduleBirthdayTDayExit(phone, firstName);
             return true;
         }
+
+        // ----------------------------------------------------
+        // Exit CTA → Visit us anytime
+        // ----------------------------------------------------
+        if (isBirthdayTDayActiveStep(currentStep)
+                && isPayload(cleanPayload,
+                "BIRTHDAY_TDAY_VISIT_ANYTIME",
+                "VISIT_US_ANYTIME")) {
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+            saveStep(session, STEP_BIRTHDAY_TDAY_EXIT_MESSAGE_SENT);
+            return true;
+        }
+
+        return false;
     }
-
-    // ----------------------------------------------------
-    // Store visit assistance → callback → reminder
-    // ----------------------------------------------------
-    if (isStep(currentStep,
-            STEP_BIRTHDAY_TDAY_STORE_HELP_SENT,
-            "STEP_6B_SENT")
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Birthday T-Day callback after store visit"
-        );
-
-        sendBirthdayTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_BIRTHDAY_TDAY_CALLBACK_CONFIRMED);
-        scheduleBirthdayTDayFinalReminder(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Reminder → Visit Store Today
-    // ----------------------------------------------------
-    if (isBirthdayTDayFinalReminderStep(currentStep)
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_VISIT_STORE_FROM_REMINDER",
-            "VISIT_STORE_TODAY")) {
-        karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-        sendBirthdayTDayStoreHelpAfterReminderStoreVisit(phone);
-        saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_STORE_SENT);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Reminder → Request Callback direct
-    // ----------------------------------------------------
-    if (isBirthdayTDayFinalReminderStep(currentStep)
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_CALLBACK_FROM_REMINDER")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Birthday T-Day callback from reminder"
-        );
-
-        sendBirthdayTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-        scheduleBirthdayTDayExit(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Store help after reminder store visit → callback → exit
-    // ----------------------------------------------------
-    if (isBirthdayTDayFinalReminderStoreStep(currentStep)
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Birthday T-Day callback after reminder store"
-        );
-
-        sendBirthdayTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_BIRTHDAY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-        scheduleBirthdayTDayExit(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Exit CTA → Visit us anytime
-    // ----------------------------------------------------
-    if (isBirthdayTDayActiveStep(currentStep)
-            && isPayload(cleanPayload,
-            "BIRTHDAY_TDAY_VISIT_ANYTIME",
-            "VISIT_US_ANYTIME")) {
-        karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-        saveStep(session, STEP_BIRTHDAY_TDAY_EXIT_MESSAGE_SENT);
-        return true;
-    }
-
-    return false;
-}
 
     private void sendBirthdayTDayStoreLocator(
             String phone,
@@ -3010,443 +2301,252 @@ private boolean handleBirthdayTDayFlow(
     // Anniversary -> confirmation -> bridge -> opener -> discovery / offer.
     // ---------------------------------------------------------------------
 
-//    private boolean handleAnniversaryT10Flow(
-//            String phone,
-//            BotSession session,
-//            String firstName,
-//            String cleanPayload,
-//            Long customerId
-//    ) {
-//        String currentStep = safeStep(session);
-//
-//        if (isAnniversaryT10MonthConfirmationStep(currentStep)) {
-//
+    private boolean handleAnniversaryT10Flow(
+            String phone,
+            BotSession session,
+            String firstName,
+            String cleanPayload,
+            Long customerId
+    ) {
+        String currentStep = safeStep(session);
+
+        if (isAnniversaryT10MonthConfirmationStep(currentStep)) {
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_MONTH_CONFIRMED",
+                    "ANNIVERSARY_MONTH_YES",
+                    "YES_THAT_S_CORRECT",
+                    "YES_THATS_CORRECT",
+                    "YES_CORRECT", "YES")) {
+
+                sendAnniversaryT10Opener(phone, firstName);               // ← DIRECT OPENER
+                saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);  // ← DIRECT OPENER STEP
+                return true;
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_DATE_CORRECTION",
+                    "ANNIVERSARY_MONTH_NO",
+                    "NO_THAT_S_NOT_RIGHT",
+                    "NO_THATS_NOT_RIGHT",
+                    "NO_NOT_RIGHT","NO")) {
+
+                sendAnniversaryT10DateCorrectionAsk(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_T10_DATE_PENDING);
+                return true;
+            }
+        }
+
+        if (isAnniversaryT10BridgeStep(currentStep)) {
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_EXPLORE_COLLECTIONS",
+                    "ANNIV_YES_SHOW_ME")) {
+
+                sendAnniversaryT10Opener(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_EXIT_AFTER_CONFIRMATION",
+                    "ANNIV_MAYBE_LATER")) {
+
+                sendAnniversaryT10GracefulExit(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_T10_GRACEFUL_EXIT);
+                return true;
+            }
+        }
+
+        if (isAnniversaryT10OpenerStep(currentStep)) {
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_FIND_GIFT",
+                    "FIND_ANNIVERSARY_GIFT",
+                    "FIND_PERFECT_GIFT",
+                    "FIND_GIFT")) {
+
+                sendAnniversaryT10GenderSelection(phone);
+                saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_VIEW_OFFERS",
+                    "SEE_ANNIVERSARY_OFFERS",
+                    "ANNIVERSARY_OFFERS")) {
+
+                sendAnniversaryT10Offer(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_T10_OFFER_SENT);
+                return true;
+            }
+        }
+
+        if (isAnniversaryT10GenderSelectionStep(currentStep)) {
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_MENS_COLLECTION",
+                    "MENS_COLLECTION",
+                    "MEN_COLLECTION",
+                    "MENS")) {
+
+                return sendAnniversaryT10BrandCarousel(phone, session, firstName, "MEN");
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_WOMENS_COLLECTION",
+                    "WOMENS_COLLECTION",
+                    "WOMEN_COLLECTION",
+                    "WOMENS")) {
+
+                return sendAnniversaryT10BrandCarousel(phone, session, firstName, "WOMEN");
+            }
+
 //            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_MONTH_CONFIRMED",
-//                    "ANNIVERSARY_MONTH_YES",
-//                    "YES_THAT_S_CORRECT",
-//                    "YES_THATS_CORRECT",
-//                    "YES_CORRECT", "YES")) {
+//                    "ANNIVERSARY_T10_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE")) {
 //
-//                sendAnniversaryT10Opener(phone, firstName);               // ← DIRECT OPENER
-//                saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);  // ← DIRECT OPENER STEP
+//                sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
+//                scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
 //                return true;
 //            }
-//
+
+
+//            For Now Just I do commend Couple  watchs
 //            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_DATE_CORRECTION",
-//                    "ANNIVERSARY_MONTH_NO",
-//                    "NO_THAT_S_NOT_RIGHT",
-//                    "NO_THATS_NOT_RIGHT",
-//                    "NO_NOT_RIGHT","NO")) {
+//                    "ANNIVERSARY_T10_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE")) {
 //
-//                sendAnniversaryT10DateCorrectionAsk(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_T10_DATE_PENDING);
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
+//
+//                taskScheduler.schedule(() -> {
+//                    BotSession latest = getLatestSession(phone);
+//                    if (latest == null || !isCurrentStep(latest, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT)) {
+//                        return;
+//                    }
+//                    sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
+//                    scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
+//                }, Instant.now().plusSeconds(30));
+//
 //                return true;
 //            }
-//        }
-//
-//        if (isAnniversaryT10BridgeStep(currentStep)) {
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_EXPLORE_COLLECTIONS",
-//                    "ANNIV_YES_SHOW_ME")) {
-//
-//                sendAnniversaryT10Opener(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_EXIT_AFTER_CONFIRMATION",
-//                    "ANNIV_MAYBE_LATER")) {
-//
-//                sendAnniversaryT10GracefulExit(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_T10_GRACEFUL_EXIT);
-//                return true;
-//            }
-//        }
-//
-//        if (isAnniversaryT10OpenerStep(currentStep)) {
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_FIND_GIFT",
-//                    "FIND_ANNIVERSARY_GIFT",
-//                    "FIND_PERFECT_GIFT",
-//                    "FIND_GIFT")) {
-//
-//                sendAnniversaryT10GenderSelection(phone);
-//                saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_VIEW_OFFERS",
-//                    "SEE_ANNIVERSARY_OFFERS",
-//                    "ANNIVERSARY_OFFERS")) {
-//
-//                sendAnniversaryT10Offer(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_T10_OFFER_SENT);
-//                return true;
-//            }
-//        }
-//
-//        if (isAnniversaryT10GenderSelectionStep(currentStep)) {
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_MENS_COLLECTION",
-//                    "MENS_COLLECTION",
-//                    "MEN_COLLECTION",
-//                    "MENS")) {
-//
-//                return sendAnniversaryT10BrandCarousel(phone, session, firstName, "MEN");
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_WOMENS_COLLECTION",
-//                    "WOMENS_COLLECTION",
-//                    "WOMEN_COLLECTION",
-//                    "WOMENS")) {
-//
-//                return sendAnniversaryT10BrandCarousel(phone, session, firstName, "WOMEN");
-//            }
-//
-////            if (isPayload(cleanPayload,
-////                    "ANNIVERSARY_T10_COUPLE_WATCHES",
-////                    "COUPLE_WATCHES",
-////                    "COUPLE")) {
-////
-////                sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
-////                session.setSelectedCollection(BotSession.Collection.COUPLES);
-////                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
-////                scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
-////                return true;
-////            }
-//
-//
-////            For Now Just I do commend Couple  watchs
-////            if (isPayload(cleanPayload,
-////                    "ANNIVERSARY_T10_COUPLE_WATCHES",
-////                    "COUPLE_WATCHES",
-////                    "COUPLE")) {
-////
-////                session.setSelectedCollection(BotSession.Collection.COUPLES);
-////                saveStep(session, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT);
-////
-////                taskScheduler.schedule(() -> {
-////                    BotSession latest = getLatestSession(phone);
-////                    if (latest == null || !isCurrentStep(latest, STEP_ANNIVERSARY_T10_COUPLE_CATALOGUE_SENT)) {
-////                        return;
-////                    }
-////                    sendAnniversaryT10CoupleWatchesCatalogue(phone, firstName);
-////                    scheduleAnniversaryT10CatalogueFollowUp(phone, firstName);
-////                }, Instant.now().plusSeconds(30));
-////
-////                return true;
-////            }
-//
-//        }
-//
-//
-//        if (isAnniversaryT10BrandCarouselStep(currentStep)) {
-//
-//            if (isAnniversaryT10ExploreCarouselPayload(cleanPayload)
-//                    || isExploreCarouselPayload(cleanPayload)) {
-//
-//                return handleAnniversaryT10ExploreCollection(phone, session, firstName, cleanPayload);
-//            }
-//
-//            if (isAnniversaryT10CallbackCarouselPayload(cleanPayload)
-//                    || isCallbackCarouselPayload(cleanPayload)) {
-//
-//                return handleAnniversaryT10CarouselCallback(phone, session,firstName, cleanPayload);
-//            }
-//        }
-//
-//        if (isAnniversaryT10CatalogueOrOfferStep(currentStep)) {
-//
-//            // Catalogue follow-up: Visit nearest store
-//            // Offer path: Book store visit
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_CATALOGUE_VISIT_STORE",
-//                    "ANNIVERSARY_T10_OFFER_BOOK_STORE",
-//                    "ANNIV_BOOK_STORE",
-//                    "VISIT_NEAREST_STORE")) {
-//
-//                saveLead(
-//                        phone,
-//                        session.getCustomerId(),
-//                        firstName,
-//                        session,
-//                        Lead.LeadType.STORE_VISIT,
-//                        "Anniversary T-10 store visit requested"
-//                );
-//
-//
-//
-//                sendAnniversaryT10StoreVisit(phone);
-//                saveStep(session, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT);
-//                return true;
-//            }
-//
-//            // Catalogue follow-up: Request callback
-//            // Offer path: Request callback
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_CATALOGUE_CALLBACK",
-//                    "ANNIVERSARY_T10_OFFER_CALLBACK",
-//                    "ANNIV_T10_CALLBACK",
-//                    "REQUEST_CALLBACK")) {
-//
-//                sendAnniversaryT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//        }
-//
-//
-//        if (isStep(currentStep, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT, "ANNIVERSARY_STORE_VISIT_SENT")) {
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_T10_BOOK_APPOINTMENT",
-//                    "BOOK_AN_APPOINTMENT")) {
-//
-//                saveLead(
-//                        phone,
-//                        session.getCustomerId(),
-//                        firstName,
-//                        session,
-//                        Lead.LeadType.CALLBACK,
-//                        "Anniversary T-10 book appointment"
-//                );
-//
-//                sendAnniversaryT10CallbackConfirmation(phone);
-//                saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//        }
-//
-//        if (isPayload(cleanPayload,
-//                "ANNIVERSARY_T10_EXPLORE_AGAIN",
-//                "EXPLORE_AGAIN",
-//                "BROWSE_AGAIN")) {
-//
-//            if (isAnniversaryT10AnyStep(currentStep)) {
-//                sendAnniversaryT10GenderSelection(phone);
-//                saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+
+        }
+
+
+        if (isAnniversaryT10BrandCarouselStep(currentStep)) {
+
+            if (isAnniversaryT10ExploreCarouselPayload(cleanPayload)
+                    || isExploreCarouselPayload(cleanPayload)) {
+
+                return handleAnniversaryT10ExploreCollection(phone, session, firstName, cleanPayload);
+            }
+
+            if (isAnniversaryT10CallbackCarouselPayload(cleanPayload)
+                    || isCallbackCarouselPayload(cleanPayload)) {
+
+                return handleAnniversaryT10CarouselCallback(phone, session,firstName, cleanPayload);
+            }
+        }
+
+        if (isAnniversaryT10CatalogueOrOfferStep(currentStep)) {
+
+            // Catalogue follow-up: Visit nearest store
+            // Offer path: Book store visit
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_CATALOGUE_VISIT_STORE",
+                    "ANNIVERSARY_T10_OFFER_BOOK_STORE",
+                    "ANNIV_BOOK_STORE",
+                    "VISIT_NEAREST_STORE")) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Anniversary T-10 store visit requested"
+                );
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Anniversary T-10 store visit requested"
+                );
 
 
 
+                sendAnniversaryT10StoreVisit(phone);
+                saveStep(session, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT);
+                return true;
+            }
 
-private boolean handleAnniversaryT10Flow(
-        String phone,
-        BotSession session,
-        String firstName,
-        String cleanPayload,
-        Long customerId
-) {
-    String currentStep = safeStep(session);
+            // Catalogue follow-up: Request callback
+            // Offer path: Request callback
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_CATALOGUE_CALLBACK",
+                    "ANNIVERSARY_T10_OFFER_CALLBACK",
+                    "ANNIV_T10_CALLBACK",
+                    "REQUEST_CALLBACK")) {
 
-    if (isAnniversaryT10MonthConfirmationStep(currentStep)) {
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Anniversary T-10 callback requested"
+                );
 
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_MONTH_CONFIRMED",
-                "ANNIVERSARY_MONTH_YES",
-                "YES_THAT_S_CORRECT",
-                "YES_THATS_CORRECT",
-                "YES_CORRECT", "YES")) {
+                sendAnniversaryT10CallbackConfirmation(phone);
+                saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
+        }
 
-            sendAnniversaryT10Opener(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);
-            return true;
+
+        if (isStep(currentStep, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT, "ANNIVERSARY_STORE_VISIT_SENT")) {
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_T10_BOOK_APPOINTMENT",
+                    "BOOK_AN_APPOINTMENT")) {
+
+                saveLead(
+                        phone,
+                        session.getCustomerId(),
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Anniversary T-10 book appointment"
+                );
+
+                sendAnniversaryT10CallbackConfirmation(phone);
+                saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
+                return true;
+            }
         }
 
         if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_DATE_CORRECTION",
-                "ANNIVERSARY_MONTH_NO",
-                "NO_THAT_S_NOT_RIGHT",
-                "NO_THATS_NOT_RIGHT",
-                "NO_NOT_RIGHT","NO")) {
+                "ANNIVERSARY_T10_EXPLORE_AGAIN",
+                "EXPLORE_AGAIN",
+                "BROWSE_AGAIN")) {
 
-            sendAnniversaryT10DateCorrectionAsk(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_T10_DATE_PENDING);
-            return true;
+            if (isAnniversaryT10AnyStep(currentStep)) {
+                sendAnniversaryT10GenderSelection(phone);
+                saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
+                return true;
+            }
         }
+        return false;
     }
-
-    if (isAnniversaryT10BridgeStep(currentStep)) {
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_EXPLORE_COLLECTIONS",
-                "ANNIV_YES_SHOW_ME")) {
-
-            sendAnniversaryT10Opener(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_T10_OPENER_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_EXIT_AFTER_CONFIRMATION",
-                "ANNIV_MAYBE_LATER")) {
-
-            sendAnniversaryT10GracefulExit(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_T10_GRACEFUL_EXIT);
-            return true;
-        }
-    }
-
-    if (isAnniversaryT10OpenerStep(currentStep)) {
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_FIND_GIFT",
-                "FIND_ANNIVERSARY_GIFT",
-                "FIND_PERFECT_GIFT",
-                "FIND_GIFT")) {
-
-            sendAnniversaryT10GenderSelection(phone);
-            saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-            return true;
-        }
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_VIEW_OFFERS",
-                "SEE_ANNIVERSARY_OFFERS",
-                "ANNIVERSARY_OFFERS")) {
-
-            sendAnniversaryT10Offer(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_T10_OFFER_SENT);
-            return true;
-        }
-    }
-
-    if (isAnniversaryT10GenderSelectionStep(currentStep)) {
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_MENS_COLLECTION",
-                "MENS_COLLECTION",
-                "MEN_COLLECTION",
-                "MENS")) {
-
-            return sendAnniversaryT10BrandCarousel(phone, session, firstName, "MEN");
-        }
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_WOMENS_COLLECTION",
-                "WOMENS_COLLECTION",
-                "WOMEN_COLLECTION",
-                "WOMENS")) {
-
-            return sendAnniversaryT10BrandCarousel(phone, session, firstName, "WOMEN");
-        }
-    }
-
-
-    if (isAnniversaryT10BrandCarouselStep(currentStep)) {
-
-        if (isAnniversaryT10ExploreCarouselPayload(cleanPayload)
-                || isExploreCarouselPayload(cleanPayload)) {
-
-            return handleAnniversaryT10ExploreCollection(phone, session, firstName, cleanPayload);
-        }
-
-        if (isAnniversaryT10CallbackCarouselPayload(cleanPayload)
-                || isCallbackCarouselPayload(cleanPayload)) {
-
-            return handleAnniversaryT10CarouselCallback(phone, session,firstName, cleanPayload);
-        }
-    }
-
-    if (isAnniversaryT10CatalogueOrOfferStep(currentStep)) {
-
-        // Catalogue follow-up: Visit nearest store
-        // Offer path: Book store visit
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_CATALOGUE_VISIT_STORE",
-                "ANNIVERSARY_T10_OFFER_BOOK_STORE",
-                "ANNIV_BOOK_STORE",
-                "VISIT_NEAREST_STORE")) {
-
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Anniversary T-10 store visit requested"
-            );
-
-            sendAnniversaryT10StoreVisit(phone);
-            saveStep(session, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT);
-            return true;
-        }
-
-        // Catalogue follow-up: Request callback
-        // Offer path: Request callback
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_CATALOGUE_CALLBACK",
-                "ANNIVERSARY_T10_OFFER_CALLBACK",
-                "ANNIV_T10_CALLBACK",
-                "REQUEST_CALLBACK")) {
-
-            // ════════════════════════════════════════════════
-            // FIX — CALLBACK lead ab save hoga (pehle missing tha)
-            // ════════════════════════════════════════════════
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Anniversary T-10 callback requested"
-            );
-
-            sendAnniversaryT10CallbackConfirmation(phone);
-            saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-    }
-
-
-    if (isStep(currentStep, STEP_ANNIVERSARY_T10_STORE_VISIT_SENT, "ANNIVERSARY_STORE_VISIT_SENT")) {
-
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_T10_BOOK_APPOINTMENT",
-                "BOOK_AN_APPOINTMENT")) {
-
-            saveLead(
-                    phone,
-                    session.getCustomerId(),
-                    firstName,
-                    session,
-                    Lead.LeadType.CALLBACK,
-                    "Anniversary T-10 book appointment"
-            );
-
-            sendAnniversaryT10CallbackConfirmation(phone);
-            saveStep(session, STEP_ANNIVERSARY_T10_CALLBACK_CONFIRMED);
-            return true;
-        }
-    }
-
-    if (isPayload(cleanPayload,
-            "ANNIVERSARY_T10_EXPLORE_AGAIN",
-            "EXPLORE_AGAIN",
-            "BROWSE_AGAIN")) {
-
-        if (isAnniversaryT10AnyStep(currentStep)) {
-            sendAnniversaryT10GenderSelection(phone);
-            saveStep(session, STEP_ANNIVERSARY_T10_GENDER_SELECTION_SENT);
-            return true;
-        }
-    }
-    return false;
-}
-
-
 
     private boolean handleAnniversaryT10DateCorrection(
             String phone,
@@ -3583,473 +2683,253 @@ private boolean handleAnniversaryT10Flow(
     // Anniversary Day - T -> benefit intro -> wish/store -> callback/reminder/exit.
     // ---------------------------------------------------------------------
 
-//    private boolean handleAnniversaryTDayFlow(
-//            String phone,
-//            BotSession session,
-//            String firstName,
-//            String cleanPayload,
-//            Long customerId
-//    ) {
-//        String currentStep = safeStep(session);
-//
-//        // ----------------------------------------------------
-//        // Exit message sent
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayExitMessageStep(currentStep)) {
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_VISIT_ANYTIME",
-//                    "ANNIV_VISIT_US_ANYTIME",
-//                    "VISIT_US_ANYTIME")) {
-//                karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
-//                return true;
-//            }
-//            log.info("Ignored old Anniversary T-Day button after exit message phone={} payload={}",
-//                    phone, cleanPayload);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Flow completed
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayCompletedStep(currentStep)) {
-//            log.info("Ignored payload after Anniversary T-Day completed phone={} payload={}",
-//                    phone, cleanPayload);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Template step — no CTA: any input triggers opener
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayTemplateStep(currentStep)) {
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_VIEW_BENEFIT",
-//                    "ANNIV_VIEW_BENEFIT",
-//                    "ANNIVERSARY_VIEW_BENEFIT",
-//                    "ANNIV_VIEW_ACCOUNT_BENEFIT")) {
-//                sendAnniversaryTDayWish(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_WISH_SENT);
-//                return true;
-//            }
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_BENEFIT",
-//                    "ANNIV_LOCATE_STORE",
-//                    "ANNIV_LOCATE_NEAREST_STORE",
-//                    "ANNIVERSARY_LOCATE_STORE")) {
-//                sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
-//                return true;
-//            }
-//            // Any other input (including opener button clicks from this step)
-//            // → show the collection opener
-//            sendAnniversaryTDayOpener(phone, firstName);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_OPENER_SENT);
-//            return true;
-//        }
-//        // ----------------------------------------------------
-//        // Anniversary wish message → Locate Store
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayActiveStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_WISH",
-//                "ANNIV_LOCATE_STORE_FROM_WISH",
-//                "ANNIV_LOCATE_STORE",
-//                "ANNIV_LOCATE_NEAREST_STORE",
-//                "ANNIVERSARY_LOCATE_STORE")) {
-//            sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//
-//
-//// ----------------------------------------------------
-//// Anniversary T-Day Collection Sub-Flow — ONE unified block
-//// Handles all old/new button clicks from any step.
-//// Order: most specific payload first, return immediately.
-//// ----------------------------------------------------
-//        if (isStep(currentStep,
-//                STEP_ANNIVERSARY_TDAY_OPENER_SENT,
-//                STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT,
-//                STEP_ANNIVERSARY_TDAY_MEN_BRAND_CAROUSEL_SENT,
-//                STEP_ANNIVERSARY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
-//                STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT,
-//                STEP_ANNIVERSARY_TDAY_CATALOGUE_SENT,
-//                STEP_ANNIVERSARY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
-//                STEP_ANNIVERSARY_TDAY_OFFER_SENT,
-//                STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT,
-//                STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED)) {
-//
-//            // Explore again → gender selection
-//            if (isPayload(cleanPayload, "ANNIVERSARY_TDAY_EXPLORE_AGAIN")) {
-//                sendAnniversaryTDayGenderSelection(phone);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//
-//            // Opener buttons
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_FIND_GIFT",
-//                    "FIND_ANNIVERSARY_GIFT",
-//                    "FIND_PERFECT_GIFT")) {
-//                sendAnniversaryTDayGenderSelection(phone);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_SEE_OFFERS",
-//                    "SEE_ANNIVERSARY_OFFERS",
-//                    "ANNIVERSARY_OFFERS")) {
-//                sendAnniversaryTDayOffer(phone, firstName);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_OFFER_SENT);
-//                return true;
-//            }
-//
-//            // Gender selection
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_MENS_COLLECTION",
-//                    "MENS_COLLECTION",
-//                    "MEN_S_COLLECTION",
-//                    "MEN_COLLECTION",
-//                    "MENS")) {
-//                return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "MEN");
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_WOMENS_COLLECTION",
-//                    "WOMENS_COLLECTION",
-//                    "WOMEN_S_COLLECTION",
-//                    "WOMEN_COLLECTION",
-//                    "WOMENS")) {
-//                return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "WOMEN");
-//            }
-//
-//
-////            Just I do comment couple
-////            if (isPayload(cleanPayload,
-////                    "ANNIVERSARY_TDAY_COUPLE_WATCHES",
-////                    "COUPLE_WATCHES",
-////                    "COUPLE_WATCHES_💍",
-////                    "COUPLE")) {
-////                sendAnniversaryTDayCoupleWatchesCatalogue(phone, firstName);
-////                session.setSelectedCollection(BotSession.Collection.COUPLES);
-////                saveStep(session, STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT);
-////                scheduleAnniversaryTDayCollectionCatalogueFollowUp(phone, firstName);
-////                return true;
-////            }
-//
-//            // Carousel explore / callback
-//            if (isExploreCarouselPayload(cleanPayload)) {
-//                return handleAnniversaryTDayExploreCollection(phone, session, firstName, cleanPayload);
-//            }
-//
-//            if (isCallbackCarouselPayload(cleanPayload)) {
-//                return handleAnniversaryTDayCarouselCallback(phone, session, firstName, cleanPayload);
-//            }
-//
-//            // Store visit / callback from offer or catalogue follow-up
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_OFFER_BOOK_STORE",
-//                    "ANNIVERSARY_TDAY_CATALOGUE_VISIT_STORE")) {
-//                saveLead(                                              // ← ADDED
-//                        phone,
-//                        customerId,
-//                        firstName,
-//                        session,
-//                        Lead.LeadType.STORE_VISIT,
-//                        "Anniversary T-Day store visit requested"
-//                );
-//
-//                sendAnniversaryTDayCollectionStoreVisit(phone);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT);
-//                return true;
-//            }
-//
-//            if (isPayload(cleanPayload,
-//                    "ANNIVERSARY_TDAY_OFFER_CALLBACK",
-//                    "ANNIVERSARY_TDAY_CATALOGUE_CALLBACK",
-//                    "ANNIVERSARY_TDAY_BOOK_APPOINTMENT")) {
-//                sendAnniversaryTDayCollectionCallbackConfirmation(phone);
-//                saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED);
-//                return true;
-//            }
-//        }
-//
-//
-//
-//        // ----------------------------------------------------
-//        // Store help after normal store locator → callback → reminder
-//        // ----------------------------------------------------
-//        if (isStep(currentStep,
-//                STEP_ANNIVERSARY_TDAY_STORE_HELP_SENT,
-//                "ANNIVERSARY_TDAY_STORE_HELP_SENT")
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
-//
-//
-//            saveLead(                                                  // ← ADDED (bonus)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Anniversary T-Day callback after store visit"
-//            );
-//
-//            sendAnniversaryTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_CALLBACK_CONFIRMED);
-//            scheduleAnniversaryTDayFinalReminder(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Reminder → Visit Store Today
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayFinalReminderStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_VISIT_STORE_FROM_REMINDER",
-//                "ANNIV_VISIT_STORE_TODAY")) {
-//            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//            sendAnniversaryTDayStoreHelpAfterReminderStoreVisit(phone);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_STORE_SENT);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Reminder → Request Callback direct
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayFinalReminderStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_CALLBACK_FROM_REMINDER")) {
-//
-//            saveLead(                                                  // ← ADDED (bonus)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Anniversary T-Day callback from reminder"
-//            );
-//
-//            sendAnniversaryTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-//            scheduleAnniversaryTDayExit(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Store help after reminder store visit → callback → exit
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayFinalReminderStoreStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
-//
-//
-//            saveLead(                                                  // ← ADDED (bonus)
-//                    phone,
-//                    customerId,
-//                    firstName,
-//                    session,
-//                    Lead.LeadType.CALLBACK,
-//                    "Anniversary T-Day callback after reminder store"
-//            );
-//
-//            sendAnniversaryTDayCallbackConfirmation(phone);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-//            scheduleAnniversaryTDayExit(phone, firstName);
-//            return true;
-//        }
-//
-//        // ----------------------------------------------------
-//        // Exit CTA → Visit us anytime
-//        // ----------------------------------------------------
-//        if (isAnniversaryTDayActiveStep(currentStep)
-//                && isPayload(cleanPayload,
-//                "ANNIVERSARY_TDAY_VISIT_ANYTIME",
-//                "ANNIV_VISIT_US_ANYTIME",
-//                "VISIT_US_ANYTIME")) {
-//            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-//            saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
-//            return true;
-//        }
-//
-//        return false;
-//    }
+    private boolean handleAnniversaryTDayFlow(
+            String phone,
+            BotSession session,
+            String firstName,
+            String cleanPayload,
+            Long customerId
+    ) {
+        String currentStep = safeStep(session);
 
-
-private boolean handleAnniversaryTDayFlow(
-        String phone,
-        BotSession session,
-        String firstName,
-        String cleanPayload,
-        Long customerId
-) {
-    String currentStep = safeStep(session);
-
-    // ----------------------------------------------------
-    // Exit message sent
-    // ----------------------------------------------------
-    if (isAnniversaryTDayExitMessageStep(currentStep)) {
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_VISIT_ANYTIME",
-                "ANNIV_VISIT_US_ANYTIME",
-                "VISIT_US_ANYTIME")) {
-            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
+        // ----------------------------------------------------
+        // Exit message sent
+        // ----------------------------------------------------
+        if (isAnniversaryTDayExitMessageStep(currentStep)) {
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_VISIT_ANYTIME",
+                    "ANNIV_VISIT_US_ANYTIME",
+                    "VISIT_US_ANYTIME")) {
+                karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
+                return true;
+            }
+            log.info("Ignored old Anniversary T-Day button after exit message phone={} payload={}",
+                    phone, cleanPayload);
             return true;
         }
-        log.info("Ignored old Anniversary T-Day button after exit message phone={} payload={}",
-                phone, cleanPayload);
-        return true;
-    }
 
-    // ----------------------------------------------------
-    // Flow completed
-    // ----------------------------------------------------
-    if (isAnniversaryTDayCompletedStep(currentStep)) {
-        log.info("Ignored payload after Anniversary T-Day completed phone={} payload={}",
-                phone, cleanPayload);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Template step — no CTA: any input triggers opener
-    // ----------------------------------------------------
-    if (isAnniversaryTDayTemplateStep(currentStep)) {
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_VIEW_BENEFIT",
-                "ANNIV_VIEW_BENEFIT",
-                "ANNIVERSARY_VIEW_BENEFIT",
-                "ANNIV_VIEW_ACCOUNT_BENEFIT")) {
-            sendAnniversaryTDayWish(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_WISH_SENT);
+        // ----------------------------------------------------
+        // Flow completed
+        // ----------------------------------------------------
+        if (isAnniversaryTDayCompletedStep(currentStep)) {
+            log.info("Ignored payload after Anniversary T-Day completed phone={} payload={}",
+                    phone, cleanPayload);
             return true;
         }
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_BENEFIT",
+
+        // ----------------------------------------------------
+        // Template step — no CTA: any input triggers opener
+        // ----------------------------------------------------
+        if (isAnniversaryTDayTemplateStep(currentStep)) {
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_VIEW_BENEFIT",
+                    "ANNIV_VIEW_BENEFIT",
+                    "ANNIVERSARY_VIEW_BENEFIT",
+                    "ANNIV_VIEW_ACCOUNT_BENEFIT")) {
+                sendAnniversaryTDayWish(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_WISH_SENT);
+                return true;
+            }
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_BENEFIT",
+                    "ANNIV_LOCATE_STORE",
+                    "ANNIV_LOCATE_NEAREST_STORE",
+                    "ANNIVERSARY_LOCATE_STORE")) {
+                sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
+                return true;
+            }
+            // Any other input (including opener button clicks from this step)
+            // → show the collection opener
+            sendAnniversaryTDayOpener(phone, firstName);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_OPENER_SENT);
+            return true;
+        }
+        // ----------------------------------------------------
+        // Anniversary wish message → Locate Store
+        // ----------------------------------------------------
+        if (isAnniversaryTDayActiveStep(currentStep)
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_WISH",
+                "ANNIV_LOCATE_STORE_FROM_WISH",
                 "ANNIV_LOCATE_STORE",
                 "ANNIV_LOCATE_NEAREST_STORE",
                 "ANNIVERSARY_LOCATE_STORE")) {
             sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
-        // Any other input (including opener button clicks from this step)
-        // → show the collection opener
-        sendAnniversaryTDayOpener(phone, firstName);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_OPENER_SENT);
-        return true;
-    }
-    // ----------------------------------------------------
-    // Anniversary wish message → Locate Store
-    // ----------------------------------------------------
-    if (isAnniversaryTDayActiveStep(currentStep)
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_LOCATE_STORE_FROM_WISH",
-            "ANNIV_LOCATE_STORE_FROM_WISH",
-            "ANNIV_LOCATE_STORE",
-            "ANNIV_LOCATE_NEAREST_STORE",
-            "ANNIVERSARY_LOCATE_STORE")) {
-        sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
-        return true;
-    }
 
-    // ----------------------------------------------------
-    // Anniversary T-Day Collection Sub-Flow — ONE unified block
-    // Handles all old/new button clicks from any step.
-    // Order: most specific payload first, return immediately.
-    // ----------------------------------------------------
-    if (isStep(currentStep,
-            STEP_ANNIVERSARY_TDAY_OPENER_SENT,
-            STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT,
-            STEP_ANNIVERSARY_TDAY_MEN_BRAND_CAROUSEL_SENT,
-            STEP_ANNIVERSARY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
-            STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT,
-            STEP_ANNIVERSARY_TDAY_CATALOGUE_SENT,
-            STEP_ANNIVERSARY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
-            STEP_ANNIVERSARY_TDAY_OFFER_SENT,
-            STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT,
-            STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED)) {
+        // ----------------------------------------------------
 
-        // Explore again → gender selection
-        if (isPayload(cleanPayload, "ANNIVERSARY_TDAY_EXPLORE_AGAIN")) {
-            sendAnniversaryTDayGenderSelection(phone);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
-            return true;
+
+// ----------------------------------------------------
+// Anniversary T-Day Collection Sub-Flow — ONE unified block
+// Handles all old/new button clicks from any step.
+// Order: most specific payload first, return immediately.
+// ----------------------------------------------------
+        if (isStep(currentStep,
+                STEP_ANNIVERSARY_TDAY_OPENER_SENT,
+                STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT,
+                STEP_ANNIVERSARY_TDAY_MEN_BRAND_CAROUSEL_SENT,
+                STEP_ANNIVERSARY_TDAY_WOMEN_BRAND_CAROUSEL_SENT,
+                STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT,
+                STEP_ANNIVERSARY_TDAY_CATALOGUE_SENT,
+                STEP_ANNIVERSARY_TDAY_CATALOGUE_FOLLOW_UP_SENT,
+                STEP_ANNIVERSARY_TDAY_OFFER_SENT,
+                STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT,
+                STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED)) {
+
+            // Explore again → gender selection
+            if (isPayload(cleanPayload, "ANNIVERSARY_TDAY_EXPLORE_AGAIN")) {
+                sendAnniversaryTDayGenderSelection(phone);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
+                return true;
+            }
+
+            // Opener buttons
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_FIND_GIFT",
+                    "FIND_ANNIVERSARY_GIFT",
+                    "FIND_PERFECT_GIFT")) {
+                sendAnniversaryTDayGenderSelection(phone);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_SEE_OFFERS",
+                    "SEE_ANNIVERSARY_OFFERS",
+                    "ANNIVERSARY_OFFERS")) {
+                sendAnniversaryTDayOffer(phone, firstName);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_OFFER_SENT);
+                return true;
+            }
+
+            // Gender selection
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_MENS_COLLECTION",
+                    "MENS_COLLECTION",
+                    "MEN_S_COLLECTION",
+                    "MEN_COLLECTION",
+                    "MENS")) {
+                return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "MEN");
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_WOMENS_COLLECTION",
+                    "WOMENS_COLLECTION",
+                    "WOMEN_S_COLLECTION",
+                    "WOMEN_COLLECTION",
+                    "WOMENS")) {
+                return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "WOMEN");
+            }
+
+
+//            Just I do comment couple
+//            if (isPayload(cleanPayload,
+//                    "ANNIVERSARY_TDAY_COUPLE_WATCHES",
+//                    "COUPLE_WATCHES",
+//                    "COUPLE_WATCHES_💍",
+//                    "COUPLE")) {
+//                sendAnniversaryTDayCoupleWatchesCatalogue(phone, firstName);
+//                session.setSelectedCollection(BotSession.Collection.COUPLES);
+//                saveStep(session, STEP_ANNIVERSARY_TDAY_COUPLE_CATALOGUE_SENT);
+//                scheduleAnniversaryTDayCollectionCatalogueFollowUp(phone, firstName);
+//                return true;
+//            }
+
+            // Carousel explore / callback
+            if (isExploreCarouselPayload(cleanPayload)) {
+                return handleAnniversaryTDayExploreCollection(phone, session, firstName, cleanPayload);
+            }
+
+            if (isCallbackCarouselPayload(cleanPayload)) {
+                return handleAnniversaryTDayCarouselCallback(phone, session, firstName, cleanPayload);
+            }
+
+            // Store visit / callback from offer or catalogue follow-up
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_OFFER_BOOK_STORE",
+                    "ANNIVERSARY_TDAY_CATALOGUE_VISIT_STORE")) {
+                saveLead(
+                        phone,
+                        customerId,
+                        firstName,
+                        session,
+                        Lead.LeadType.STORE_VISIT,
+                        "Anniversary T-Day store visit requested"
+                );
+
+                sendAnniversaryTDayCollectionStoreVisit(phone);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT);
+                return true;
+            }
+
+            if (isPayload(cleanPayload,
+                    "ANNIVERSARY_TDAY_OFFER_CALLBACK",
+                    "ANNIVERSARY_TDAY_CATALOGUE_CALLBACK",
+                    "ANNIVERSARY_TDAY_BOOK_APPOINTMENT")) {
+
+                saveLead(
+                        phone,
+                        customerId,
+                        firstName,
+                        session,
+                        Lead.LeadType.CALLBACK,
+                        "Anniversary T-Day callback requested"
+                );
+                sendAnniversaryTDayCollectionCallbackConfirmation(phone);
+                saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED);
+                return true;
+            }
         }
 
-        // Opener buttons
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_FIND_GIFT",
-                "FIND_ANNIVERSARY_GIFT",
-                "FIND_PERFECT_GIFT")) {
-            sendAnniversaryTDayGenderSelection(phone);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_GENDER_SELECTION_SENT);
-            return true;
-        }
 
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_SEE_OFFERS",
-                "SEE_ANNIVERSARY_OFFERS",
-                "ANNIVERSARY_OFFERS")) {
-            sendAnniversaryTDayOffer(phone, firstName);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_OFFER_SENT);
-            return true;
-        }
 
-        // Gender selection
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_MENS_COLLECTION",
-                "MENS_COLLECTION",
-                "MEN_S_COLLECTION",
-                "MEN_COLLECTION",
-                "MENS")) {
-            return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "MEN");
-        }
+        // ----------------------------------------------------
+        // Store help after normal store locator → callback → reminder
+        // ----------------------------------------------------
+        if (isStep(currentStep,
+                STEP_ANNIVERSARY_TDAY_STORE_HELP_SENT,
+                "ANNIVERSARY_TDAY_STORE_HELP_SENT")
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
 
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_WOMENS_COLLECTION",
-                "WOMENS_COLLECTION",
-                "WOMEN_S_COLLECTION",
-                "WOMEN_COLLECTION",
-                "WOMENS")) {
-            return sendAnniversaryTDayBrandCarousel(phone, session, firstName, "WOMEN");
-        }
 
-        // Carousel explore / callback
-        if (isExploreCarouselPayload(cleanPayload)) {
-            return handleAnniversaryTDayExploreCollection(phone, session, firstName, cleanPayload);
-        }
-
-        if (isCallbackCarouselPayload(cleanPayload)) {
-            return handleAnniversaryTDayCarouselCallback(phone, session, firstName, cleanPayload);
-        }
-
-        // Store visit / callback from offer or catalogue follow-up
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_OFFER_BOOK_STORE",
-                "ANNIVERSARY_TDAY_CATALOGUE_VISIT_STORE")) {
-
-            saveLead(
+            saveLead(                                                  // ← ADDED (bonus)
                     phone,
                     customerId,
                     firstName,
                     session,
-                    Lead.LeadType.STORE_VISIT,
-                    "Anniversary T-Day store visit requested"
+                    Lead.LeadType.CALLBACK,
+                    "Anniversary T-Day callback after store visit"
             );
 
-            sendAnniversaryTDayCollectionStoreVisit(phone);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_STORE_VISIT_SENT);
+            sendAnniversaryTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_CALLBACK_CONFIRMED);
+            scheduleAnniversaryTDayFinalReminder(phone, firstName);
             return true;
         }
 
-        // ════════════════════════════════════════════════════
-        // FIX — CALLBACK lead ab save hoga (pehle missing tha — YE BHI MAIN BUG THA)
-        // ════════════════════════════════════════════════════
-        if (isPayload(cleanPayload,
-                "ANNIVERSARY_TDAY_OFFER_CALLBACK",
-                "ANNIVERSARY_TDAY_CATALOGUE_CALLBACK",
-                "ANNIVERSARY_TDAY_BOOK_APPOINTMENT")) {
+        // ----------------------------------------------------
+        // Reminder → Visit Store Today
+        // ----------------------------------------------------
+        if (isAnniversaryTDayFinalReminderStep(currentStep)
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_VISIT_STORE_FROM_REMINDER",
+                "ANNIV_VISIT_STORE_TODAY")) {
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+            sendAnniversaryTDayStoreHelpAfterReminderStoreVisit(phone);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_STORE_SENT);
+            return true;
+        }
+
+        // ----------------------------------------------------
+        // Reminder → Request Callback direct
+        // ----------------------------------------------------
+        if (isAnniversaryTDayFinalReminderStep(currentStep)
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_CALLBACK_FROM_REMINDER")) {
 
             saveLead(
                     phone,
@@ -4057,115 +2937,53 @@ private boolean handleAnniversaryTDayFlow(
                     firstName,
                     session,
                     Lead.LeadType.CALLBACK,
-                    "Anniversary T-Day callback requested"
+                    "Anniversary T-Day callback from reminder"
             );
 
-            sendAnniversaryTDayCollectionCallbackConfirmation(phone);
-            saveStep(session, STEP_ANNIVERSARY_TDAY_COLLECTION_CALLBACK_CONFIRMED);
+            sendAnniversaryTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
+            scheduleAnniversaryTDayExit(phone, firstName);
             return true;
         }
+
+        // ----------------------------------------------------
+        // Store help after reminder store visit → callback → exit
+        // ----------------------------------------------------
+        if (isAnniversaryTDayFinalReminderStoreStep(currentStep)
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
+
+
+            saveLead(                                                  // ← ADDED (bonus)
+                    phone,
+                    customerId,
+                    firstName,
+                    session,
+                    Lead.LeadType.CALLBACK,
+                    "Anniversary T-Day callback after reminder store"
+            );
+
+            sendAnniversaryTDayCallbackConfirmation(phone);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
+            scheduleAnniversaryTDayExit(phone, firstName);
+            return true;
+        }
+
+        // ----------------------------------------------------
+        // Exit CTA → Visit us anytime
+        // ----------------------------------------------------
+        if (isAnniversaryTDayActiveStep(currentStep)
+                && isPayload(cleanPayload,
+                "ANNIVERSARY_TDAY_VISIT_ANYTIME",
+                "ANNIV_VISIT_US_ANYTIME",
+                "VISIT_US_ANYTIME")) {
+            karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
+            saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
+            return true;
+        }
+
+        return false;
     }
-
-
-
-    // ----------------------------------------------------
-    // Store help after normal store locator → callback → reminder
-    // ----------------------------------------------------
-    if (isStep(currentStep,
-            STEP_ANNIVERSARY_TDAY_STORE_HELP_SENT,
-            "ANNIVERSARY_TDAY_STORE_HELP_SENT")
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_CALLBACK_AFTER_STORE_VISIT")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Anniversary T-Day callback after store visit"
-        );
-
-        sendAnniversaryTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_CALLBACK_CONFIRMED);
-        scheduleAnniversaryTDayFinalReminder(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Reminder → Visit Store Today
-    // ----------------------------------------------------
-    if (isAnniversaryTDayFinalReminderStep(currentStep)
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_VISIT_STORE_FROM_REMINDER",
-            "ANNIV_VISIT_STORE_TODAY")) {
-        karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-        sendAnniversaryTDayStoreHelpAfterReminderStoreVisit(phone);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_STORE_SENT);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Reminder → Request Callback direct
-    // ----------------------------------------------------
-    if (isAnniversaryTDayFinalReminderStep(currentStep)
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_CALLBACK_FROM_REMINDER")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Anniversary T-Day callback from reminder"
-        );
-
-        sendAnniversaryTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-        scheduleAnniversaryTDayExit(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Store help after reminder store visit → callback → exit
-    // ----------------------------------------------------
-    if (isAnniversaryTDayFinalReminderStoreStep(currentStep)
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_CALLBACK_AFTER_REMINDER_STORE")) {
-
-        saveLead(
-                phone,
-                customerId,
-                firstName,
-                session,
-                Lead.LeadType.CALLBACK,
-                "Anniversary T-Day callback after reminder store"
-        );
-
-        sendAnniversaryTDayCallbackConfirmation(phone);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_FINAL_REMINDER_CALLBACK_CONFIRMED);
-        scheduleAnniversaryTDayExit(phone, firstName);
-        return true;
-    }
-
-    // ----------------------------------------------------
-    // Exit CTA → Visit us anytime
-    // ----------------------------------------------------
-    if (isAnniversaryTDayActiveStep(currentStep)
-            && isPayload(cleanPayload,
-            "ANNIVERSARY_TDAY_VISIT_ANYTIME",
-            "ANNIV_VISIT_US_ANYTIME",
-            "VISIT_US_ANYTIME")) {
-        karixApiService.sendTextMessage(phone, STORE_LOCATOR_URL);
-        saveStep(session, STEP_ANNIVERSARY_TDAY_FLOW_COMPLETED);
-        return true;
-    }
-
-    return false;
-}
-
-
 
     private void sendAnniversaryTDayStoreLocator(
             String phone,
