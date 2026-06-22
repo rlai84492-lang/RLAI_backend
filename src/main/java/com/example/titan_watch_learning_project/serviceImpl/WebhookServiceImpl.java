@@ -288,6 +288,44 @@ public class WebhookServiceImpl {
 
         return normalized;
     }
+//    private void handleDeliveryEvent(JsonNode root) {
+//        String status     = root.path("notificationAttributes").path("status").asText("");
+//        String reason     = root.path("notificationAttributes").path("reason").asText("");
+//        String code       = root.path("notificationAttributes").path("code").asText("");
+//        String to         = root.path("recipient").path("to").asText("");
+//        String mid        = root.path("events").path("mid").asText("");
+//        String templateId = root.path("templateId").asText("");
+//
+//        log.info("Delivery event: to={} status={} reason={} code={} mid={} templateId={}",
+//                to, status, reason, code, mid, templateId);
+//
+//        // ── YE NAYA BLOCK ADD KARO — Outbound message save/update karo ──
+//        saveOrUpdateOutboundMessage(to, mid, status, templateId);
+//
+//        // ── AUTO SESSION FROM TEMPLATE ────────────────────────────
+//        // Jab template delivered ya sent hua
+//        // → Session auto-create karo agar exist nahi karta
+//        if (("delivered".equalsIgnoreCase(status) || "sent".equalsIgnoreCase(status))
+//                && !to.isBlank()) {
+//
+//            String step = switch (templateId) {
+//                case "tw_bday_t"  -> "BIRTHDAY_T10_CONFIRMATION_SENT";
+//                case "tw_bday"    -> "BIRTHDAY_TDAY_TEMPLATE_SENT";
+//                case "tw_anniv_t" -> "ANNIVERSARY_T10_CONFIRMATION_SENT";
+//                case "tw_anniv"   -> "ANNIVERSARY_TDAY_TEMPLATE_SENT";
+//                default           -> null;
+//            };
+//
+//            if (step != null) {
+//                autoCreateSessionIfNeeded(to, step, templateId);
+//            }
+//        }
+//        // ─────────────────────────────────────────────────────────
+//    }
+
+
+
+
     private void handleDeliveryEvent(JsonNode root) {
         String status     = root.path("notificationAttributes").path("status").asText("");
         String reason     = root.path("notificationAttributes").path("reason").asText("");
@@ -299,29 +337,40 @@ public class WebhookServiceImpl {
         log.info("Delivery event: to={} status={} reason={} code={} mid={} templateId={}",
                 to, status, reason, code, mid, templateId);
 
+        // ── STEP RESOLVE — pehle karo (MOVED UP from below) ──────────
+        // ★ FIX: step resolve pehle karo — agar null hai (non-bot template)
+        //         to saveOrUpdateOutboundMessage bhi mat karo aur return kar do.
+        //         Pehle step resolve neeche tha (if block ke andar), ab upar hai.
+        String step = switch (templateId) {
+            case "tw_bday_t"  -> "BIRTHDAY_T10_CONFIRMATION_SENT";
+            case "tw_bday"    -> "BIRTHDAY_TDAY_TEMPLATE_SENT";
+            case "tw_anniv_t" -> "ANNIVERSARY_T10_CONFIRMATION_SENT";
+            case "tw_anniv"   -> "ANNIVERSARY_TDAY_TEMPLATE_SENT";
+            default           -> null;
+        };
+
+        // ★ FIX: Non-bot template hai to kuch nahi karo — NAYA BLOCK
+        if (step == null) {
+            log.debug("Skipping non-bot template: templateId={}", templateId);
+            return;
+        }
+
         // ── YE NAYA BLOCK ADD KARO — Outbound message save/update karo ──
+        // (SAME as before — koi change nahi, sirf ab sirf 4 templates ke liye chalega)
         saveOrUpdateOutboundMessage(to, mid, status, templateId);
 
-        // ── AUTO SESSION FROM TEMPLATE ────────────────────────────
+        // ── AUTO SESSION FROM TEMPLATE ────────────────────────────────
         // Jab template delivered ya sent hua
         // → Session auto-create karo agar exist nahi karta
+        // (SAME as before — koi change nahi)
         if (("delivered".equalsIgnoreCase(status) || "sent".equalsIgnoreCase(status))
                 && !to.isBlank()) {
-
-            String step = switch (templateId) {
-                case "tw_bday_t"  -> "BIRTHDAY_T10_CONFIRMATION_SENT";
-                case "tw_bday"    -> "BIRTHDAY_TDAY_TEMPLATE_SENT";
-                case "tw_anniv_t" -> "ANNIVERSARY_T10_CONFIRMATION_SENT";
-                case "tw_anniv"   -> "ANNIVERSARY_TDAY_TEMPLATE_SENT";
-                default           -> null;
-            };
-
-            if (step != null) {
-                autoCreateSessionIfNeeded(to, step, templateId);
-            }
+            autoCreateSessionIfNeeded(to, step, templateId);
         }
-        // ─────────────────────────────────────────────────────────
+        // ─────────────────────────────────────────────────────────────
     }
+
+
 
     // ── NAYA METHOD — messages table mein outbound entry save/update ──
 // ── NAYA METHOD — outbound message save ya status update ──────────

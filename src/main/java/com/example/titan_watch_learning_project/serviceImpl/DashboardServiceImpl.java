@@ -100,6 +100,13 @@
                     repo.findRecentActivityByFlowAndDate(pattern, from, to)
                             .stream().map(this::enrichActivity).toList();
 
+
+            // Existing code ke saath yahan add karo:
+            Map<String, Long> stepCounts = repo.getStepCounts(pattern, from, to);
+
+            log.info("stepCounts size={} data={}", stepCounts.size(), stepCounts);  // ← ADD
+
+
             return DashboardResponse.builder()
                     .sessions(sessions)
                     .leads(leads)
@@ -111,6 +118,7 @@
                     .hourly(buildHourlyMessages())
                     .collData(repo.getCollectionSplit(pattern, from, to))
                     .timeline(timeline)
+                    .stepCounts(stepCounts)     // ← NAYA
                     .build();
         }
 
@@ -629,7 +637,13 @@
             long callbackLeads  = lm.getOrDefault("callback",    0L);
             long storeVisits    = lm.getOrDefault("store_visit", 0L);
             long newLeads       = lm.getOrDefault("new_count",   0L);
-            long converted      = lm.getOrDefault("converted",   0L);
+//            long converted      = lm.getOrDefault("converted",   0L);
+            long totalLeads     = lm.getOrDefault("total",        0L);
+
+            System.out.println(totalLeads  + "Total Leads");
+
+            double conversionRate = pctFloat(totalLeads, delivered);
+
 
             // ── "Opens" aur "Clicks" genuinely messages table se ──
             // (session-based "replied" ki jagah, taaki concept sahi match kare)
@@ -640,7 +654,7 @@
             int openRate       = pct(readMessages, delivered);                  // Opens / Delivered
             int clickRate      = pct(buttonClicks, delivered);                  // Clicks / Delivered
 //            int completionRate = pct(completedFlows, delivered);                // Completed / Delivered
-            int conversionRate = pct(converted, delivered);                     // Converted / Delivered
+//            int conversionRate = pct(converted, delivered);                     // Converted / Delivered
 
             return DashboardResponse.MetricsDto.builder()
                     // 8 primary KPI tiles
@@ -659,7 +673,7 @@
                     .storeVisits(storeVisits)
                     .completedFlows(completedFlows)
                     .newLeads(newLeads)
-                    .converted(converted)
+//                    .converted(converted)
                     .conversionRate(conversionRate)
                     .build();
         }
@@ -670,6 +684,12 @@
         private int pct(long num, long den) {
             if (den == 0) return 0;
             return (int) Math.min(100, Math.round((num * 100.0) / den));
+        }
+
+        /** Floating-point percentage for conversionRate — 2 decimal places, no cap. */
+        private double pctFloat(long num, long den) {
+            if (den == 0) return 0.0;
+            return Math.round((num * 10000.0) / den) / 100.0;
         }
 
         // ════════════════════════════════════════════════════════════

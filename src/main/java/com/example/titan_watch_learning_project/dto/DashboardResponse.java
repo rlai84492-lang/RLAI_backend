@@ -117,6 +117,7 @@ package com.example.titan_watch_learning_project.dto;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -138,6 +139,11 @@ public class DashboardResponse {
     private HourlyMessagesDto     hourly;
     private CollectionSplitDto    collData;
     private List<ActivityEventDto> timeline;
+
+
+    // DashboardResponse.java ke builder mein add karo:
+    @Builder.Default
+    private Map<String, Long> stepCounts = new LinkedHashMap<>();
 
     // ════════════════════════════════════════════════════════════════
     // ── SessionDto ──────────────────────────────────────────────────
@@ -198,7 +204,7 @@ public class DashboardResponse {
         private long completedFlows;
         private long newLeads;
         private long converted;
-        private int  conversionRate;
+        double   conversionRate;
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -242,4 +248,7 @@ public class DashboardResponse {
         private String bg;
         private String color;
     }
+
+
+
 }
