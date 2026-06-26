@@ -58,8 +58,8 @@ public class DailyLeadReportScheduler {
             log.info("Daily lead report job started...");
 
             // ── 1. Aaj ke saare leads nikalo (00:00 se ab tak) ──
-//            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-            LocalDateTime startOfDay = LocalDate.now().minusDays(7).atStartOfDay();
+            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+//            LocalDateTime startOfDay = LocalDate.now().minusDays(7).atStartOfDay();
 
             LocalDateTime endOfDay   = LocalDateTime.now();
 
