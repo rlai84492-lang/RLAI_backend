@@ -636,6 +636,9 @@
 
             long callbackLeads  = lm.getOrDefault("callback",    0L);
             long storeVisits    = lm.getOrDefault("store_visit", 0L);
+
+            System.out.println("callbackLeads: " + callbackLeads + ";storeVisits: " + storeVisits);
+
             long newLeads       = lm.getOrDefault("new_count",   0L);
 //            long converted      = lm.getOrDefault("converted",   0L);
             long totalLeads     = lm.getOrDefault("total",        0L);

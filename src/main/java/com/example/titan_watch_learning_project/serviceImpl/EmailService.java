@@ -62,8 +62,10 @@ public class EmailService {
 
         } catch (MessagingException e) {
             log.error("Failed to send email to={} subject={}", to, subject, e);
+            // ✅ YE KARO — exception propagate karo
         } catch (Exception e) {
             log.error("Unexpected error while sending email to={}", to, e);
+            throw new RuntimeException("Email sending failed: " + e.getMessage(), e);
         }
     }
 

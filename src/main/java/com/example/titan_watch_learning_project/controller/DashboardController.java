@@ -647,6 +647,8 @@ public class DashboardController {
         Map<String, Long> leadMetrics = dashboardService.getLeadMetrics(
                 flow, range, startDate, endDate);
 
+        System.out.println(leadMetrics + "Leads Metrixs");
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("leads",       leadsPage.getContent().stream()
                 .map(dashboardService::toLeadDto).toList());

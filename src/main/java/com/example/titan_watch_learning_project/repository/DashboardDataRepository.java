@@ -590,7 +590,7 @@ public class DashboardDataRepository {
         String sql =
                 "SELECT HOUR(sent_at) AS hour_value, direction, COUNT(*) AS total " +
                         "FROM messages " +
-                        "WHERE DATE(sent_at) = CURDATE() " +
+                        "WHERE sent_at >= CURDATE() AND sent_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY) "+
                         "  AND phone IN (SELECT DISTINCT phone FROM bot_sessions " +
                         "                WHERE current_step LIKE 'BIRTHDAY_T10_%' " +
                         "                   OR current_step LIKE 'BIRTHDAY_TDAY_%' " +
