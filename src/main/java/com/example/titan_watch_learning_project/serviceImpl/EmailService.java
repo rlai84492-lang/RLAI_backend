@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -40,9 +41,11 @@ public class EmailService {
     ) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true); // true = multipart (attachment ke liye)
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            // ── Multiple recipients (comma-separated) handle karo ──
+            helper.setFrom("reports@rightleft.ai"); // ✅ Sender fix
+
+            // Multiple recipients handle karo
             String[] recipients = to.split(",");
             for (int i = 0; i < recipients.length; i++) {
                 recipients[i] = recipients[i].trim();
@@ -50,19 +53,16 @@ public class EmailService {
             helper.setTo(recipients);
 
             helper.setSubject(subject);
-            helper.setText(bodyText, true); // true = HTML body
+            helper.setText(bodyText, true); // true = HTML
 
-            helper.addAttachment(
-                    fileName,
-                    new org.springframework.core.io.ByteArrayResource(attachment)
-            );
+            helper.addAttachment(fileName, new ByteArrayResource(attachment));
 
             mailSender.send(message);
             log.info("Email sent successfully to={} subject={}", to, subject);
 
         } catch (MessagingException e) {
             log.error("Failed to send email to={} subject={}", to, subject, e);
-            // ✅ YE KARO — exception propagate karo
+            throw new RuntimeException("Email sending failed: " + e.getMessage(), e); // ✅ throw add kiya
         } catch (Exception e) {
             log.error("Unexpected error while sending email to={}", to, e);
             throw new RuntimeException("Email sending failed: " + e.getMessage(), e);
