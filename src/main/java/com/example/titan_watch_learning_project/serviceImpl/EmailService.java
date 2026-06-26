@@ -43,7 +43,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setFrom("reports@rightleft.ai"); // ✅ Sender fix
+            helper.setFrom("bela@rightleft.ai"); // ✅ Sender fix
 
             // Multiple recipients handle karo
             String[] recipients = to.split(",");
