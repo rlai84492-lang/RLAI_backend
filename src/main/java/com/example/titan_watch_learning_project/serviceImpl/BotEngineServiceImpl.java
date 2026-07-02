@@ -209,6 +209,24 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 return;
             }
 
+
+
+            // ✅ ADD THIS — Duplicate check
+            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+            LocalDateTime endOfDay   = LocalDateTime.now();
+
+            boolean alreadyExists = leadRepository.existsByPhoneAndLeadTypeAndCreatedAtBetween(
+                    phone, leadType, startOfDay, endOfDay);
+
+            if (alreadyExists) {
+                log.info("Duplicate lead skipped phone={} leadType={}", phone, leadType);
+                return;
+            }
+
+
+
+
+
             String selectedCollection = null;
             String selectedBrand      = null;     // ← naam sahi kiya
             String currentStep        = null;     // ← naya — step capture
@@ -2473,14 +2491,7 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                         "Anniversary T-10 store visit requested"
                 );
 
-                saveLead(
-                        phone,
-                        session.getCustomerId(),
-                        firstName,
-                        session,
-                        Lead.LeadType.STORE_VISIT,
-                        "Anniversary T-10 store visit requested"
-                );
+
 
 
 

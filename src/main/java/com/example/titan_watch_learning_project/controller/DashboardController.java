@@ -634,8 +634,10 @@ public class DashboardController {
         // Hard-cap to 200 — prevents OOM from large page requests
         int safeSize = Math.min(Math.max(size, 1), 200);
 
-        Pageable pageable = PageRequest.of(page, safeSize,
-                Sort.by("createdAt").descending());
+//        Pageable pageable = PageRequest.of(page, safeSize,
+//                Sort.by("createdAt").descending());
+        // ✅ Sort hata do — repository SQL mein already ORDER BY created_at DESC hai
+        Pageable pageable = PageRequest.of(page, safeSize);
 
         Page<Lead> leadsPage = dashboardService.getLeadsPage(
                 flow, range, startDate, endDate, pageable);

@@ -28,10 +28,81 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
      *   idx_leads_flow_created(flow, created_at)
      *   idx_leads_step_created(step_name, created_at)
      */
-    @Query("SELECT l FROM Lead l " +
-            "WHERE (l.flow = :flow OR l.stepName LIKE :stepPattern) " +
-            "  AND l.createdAt >= :from AND l.createdAt < :to " +
-            "ORDER BY l.createdAt DESC")
+//    @Query("SELECT l FROM Lead l " +
+//            "WHERE (l.flow = :flow OR l.stepName LIKE :stepPattern) " +
+//            "  AND l.createdAt >= :from AND l.createdAt < :to " +
+//            "ORDER BY l.createdAt DESC")
+//    Page<Lead> findByFlowOrStepPatternAndDateRange(
+//            @Param("flow")        String flow,
+//            @Param("stepPattern") String stepPattern,
+//            @Param("from")        LocalDateTime from,
+//            @Param("to")          LocalDateTime to,
+//            Pageable pageable
+//    );
+//
+//    /**
+//     * ★ Paginated leads — all flows, date range.
+//     * Uses index: idx_leads_created_at(created_at).
+//     */
+//    @Query("SELECT l FROM Lead l " +
+//            "WHERE l.createdAt >= :from AND l.createdAt < :to " +
+//            "ORDER BY l.createdAt DESC")
+//    Page<Lead> findByDateRange(
+//            @Param("from") LocalDateTime from,
+//            @Param("to")   LocalDateTime to,
+//            Pageable pageable
+//    );
+
+
+    // ✅ FIX 1 — Deduplicated: date range only
+    @Query(
+            value = """
+        SELECT * FROM leads l
+        WHERE l.id IN (
+            SELECT MIN(id) FROM leads
+            WHERE created_at >= :from AND created_at < :to
+            GROUP BY phone, lead_type, DATE(created_at)
+        )
+        ORDER BY l.created_at DESC
+        """,
+            countQuery = """
+        SELECT COUNT(*) FROM (
+            SELECT MIN(id) FROM leads
+            WHERE created_at >= :from AND created_at < :to
+            GROUP BY phone, lead_type, DATE(created_at)
+        ) AS deduped
+        """,
+            nativeQuery = true
+    )
+    Page<Lead> findByDateRange(
+            @Param("from") LocalDateTime from,
+            @Param("to")   LocalDateTime to,
+            Pageable pageable
+    );
+
+
+    // ✅ FIX 2 — Deduplicated: with flow/stepName filter
+    @Query(
+            value = """
+        SELECT * FROM leads l
+        WHERE l.id IN (
+            SELECT MIN(id) FROM leads
+            WHERE (flow = :flow OR step_name LIKE :stepPattern)
+              AND created_at >= :from AND created_at < :to
+            GROUP BY phone, lead_type, DATE(created_at)
+        )
+        ORDER BY l.created_at DESC
+        """,
+            countQuery = """
+        SELECT COUNT(*) FROM (
+            SELECT MIN(id) FROM leads
+            WHERE (flow = :flow OR step_name LIKE :stepPattern)
+              AND created_at >= :from AND created_at < :to
+            GROUP BY phone, lead_type, DATE(created_at)
+        ) AS deduped
+        """,
+            nativeQuery = true
+    )
     Page<Lead> findByFlowOrStepPatternAndDateRange(
             @Param("flow")        String flow,
             @Param("stepPattern") String stepPattern,
@@ -40,22 +111,19 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
             Pageable pageable
     );
 
-    /**
-     * ★ Paginated leads — all flows, date range.
-     * Uses index: idx_leads_created_at(created_at).
-     */
-    @Query("SELECT l FROM Lead l " +
-            "WHERE l.createdAt >= :from AND l.createdAt < :to " +
-            "ORDER BY l.createdAt DESC")
-    Page<Lead> findByDateRange(
-            @Param("from") LocalDateTime from,
-            @Param("to")   LocalDateTime to,
-            Pageable pageable
-    );
-
     /** Legacy — no date filter, for export/settings pages. */
     List<Lead> findAllByOrderByCreatedAtDesc();
 
     List<Lead> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
+
+
+    // ✅ NEW — Duplicate lead prevention
+    boolean existsByPhoneAndLeadTypeAndCreatedAtBetween(
+            String phone,
+            Lead.LeadType leadType,
+            LocalDateTime from,
+            LocalDateTime to
+    );
 
 }

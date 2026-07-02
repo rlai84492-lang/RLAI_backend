@@ -1,7 +1,4 @@
-
-
 package com.example.titan_watch_learning_project.entity;//package com.example.titan.entity;
-
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
