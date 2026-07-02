@@ -119,6 +119,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -172,7 +173,18 @@ public class DailyLeadReportScheduler {
 
             LocalDateTime endOfDay = LocalDateTime.now();
 
-            List<Lead> todaysLeads = leadRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+//            List<Lead> todaysLeads = leadRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+            List<Lead> rawLeads = leadRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+
+
+            // Deduplicate: same phone + same leadType = ek hi lead
+            Map<String, Lead> seen = new java.util.LinkedHashMap<>();
+            for (Lead lead : rawLeads) {
+                String key = lead.getPhone() + "_" + lead.getLeadType();
+                seen.putIfAbsent(key, lead);  // pehli wali rakhta hai, baad wali skip
+            }
+            List<Lead> todaysLeads = new java.util.ArrayList<>(seen.values());
+
 
             if (todaysLeads.isEmpty()) {
                 log.info("No leads found for today. Skipping email.");
@@ -182,8 +194,21 @@ public class DailyLeadReportScheduler {
             String sheetTitle = "Daily Leads — " + LocalDate.now();
             String subject    = "Titan World — Daily Lead Report (" + LocalDate.now() + ") — "
                     + todaysLeads.size() + " leads";
-            String emailBody  = emailService.buildDailyReportEmailBody(
-                    todaysLeads.size(), 0, 0);
+//            String emailBody  = emailService.buildDailyReportEmailBody(
+//                    todaysLeads.size(), 0, 0);
+
+
+            long callbacks = todaysLeads.stream()
+                    .filter(l -> Lead.LeadType.CALLBACK.equals(l.getLeadType()))
+                    .count();
+            long storeVisits = todaysLeads.stream()
+                    .filter(l -> Lead.LeadType.STORE_VISIT.equals(l.getLeadType()))
+                    .count();
+
+            String emailBody = emailService.buildDailyReportEmailBody(
+                    todaysLeads.size(), (int) callbacks, (int) storeVisits);
+
+
             String fileName   = "leads_" + LocalDate.now() + ".xlsx";
 
             byte[] excelBytes = excelReportService.generateExcel(todaysLeads, sheetTitle);
