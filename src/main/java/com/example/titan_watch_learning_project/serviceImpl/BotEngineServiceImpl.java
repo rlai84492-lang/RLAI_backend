@@ -2093,6 +2093,10 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
             if (isPayload(cleanPayload,
                     "BIRTHDAY_TDAY_LOCATE_STORE_FROM_BENEFIT",
                     "LOCATE_NEAREST_STORE")) {
+
+                saveLead(phone, customerId, firstName, session,       // ✅ ADD
+                        Lead.LeadType.STORE_VISIT, "Birthday T-Day locate store from benefit");
+
                 sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
                 return true;
             }
@@ -2110,6 +2114,9 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 "BIRTHDAY_TDAY_LOCATE_STORE_FROM_WISH",
                 "LOCATE_STORE",
                 "LOCATE_NEAREST_STORE_FROM_WISH")) {
+            saveLead(phone, customerId, firstName, session,       // ✅ ADD
+                    Lead.LeadType.STORE_VISIT, "Birthday T-Day locate store from wish");
+
             sendBirthdayTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
@@ -2747,6 +2754,9 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                     "ANNIV_LOCATE_STORE",
                     "ANNIV_LOCATE_NEAREST_STORE",
                     "ANNIVERSARY_LOCATE_STORE")) {
+
+                saveLead(phone, customerId, firstName, session,       // ✅ ADD
+                        Lead.LeadType.STORE_VISIT, "Anniversary T-Day locate store from benefit");
                 sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
                 return true;
             }
@@ -2766,6 +2776,10 @@ private static final String STEP_BIRTHDAY_TDAY_GENDER_SELECTION_SENT = "BIRTHDAY
                 "ANNIV_LOCATE_STORE",
                 "ANNIV_LOCATE_NEAREST_STORE",
                 "ANNIVERSARY_LOCATE_STORE")) {
+
+            saveLead(phone, customerId, firstName, session,       // ✅ ADD
+                    Lead.LeadType.STORE_VISIT, "Anniversary T-Day locate store from wish");
+
             sendAnniversaryTDayStoreLocator(phone, session, customerId, firstName);
             return true;
         }
